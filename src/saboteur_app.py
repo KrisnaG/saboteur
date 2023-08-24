@@ -5,11 +5,13 @@ Author:
 
 import os
 import shutil
+from component.card import PathCard
 
 from game.saboteur_game import SaboteurGame
 from environment.saboteur_environment import SaboteurEnvironment
 from player.saboteur_player import SaboteurPlayer
 from program.agent_program import human_agent
+from component.game_board import GameBoard
 import constant.game_constants as gc
 
 
@@ -19,7 +21,7 @@ def delete_pycache(root_dir):
     Args:
         root_dir (str): The root directory to start the search for __pycache__ directories.
     """
-    for dirpath, dirnames, _ in os.walk(root_dir):
+    for dirpath, dirnames, filenames in os.walk(root_dir):
         for dirname in dirnames:
             if dirname == '__pycache__':
                 pycache_path = os.path.join(dirpath, dirname)
@@ -30,16 +32,16 @@ if __name__ == '__main__':
     """
     Main entry point.
     """
-    players = []
+    game_board = GameBoard()
+    
+    # 
+    game_environment = SaboteurEnvironment(game_board)
     
     # Create SaboteurPlayer instances for each player
     for player in range(gc.NUMBER_OF_PLAYERS):
-        players.append(SaboteurPlayer(f'P{player}', human_agent))
-        
-    # 
-    game_environment = SaboteurEnvironment()
+        game_environment.add_player(SaboteurPlayer(f'P{player}', human_agent))
     
-    game = SaboteurGame(players, game_environment)
+    game = SaboteurGame(game_environment)
     
     # Delete cache files
     delete_pycache("../src")
