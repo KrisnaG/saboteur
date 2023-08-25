@@ -3,21 +3,21 @@
 
 # Players
 NUMBER_OF_PLAYERS = 8
-STARTING_PLAYER = 'P0'
+NUMBER_OF_CARDS = 4
 
-# Display
+# Display Size
 DISPLAY_WIDTH = 1600
 DISPLAY_HEIGHT = 900
 
-# Board
+# Board Size
 BOARD_COL_SIZE = 20
 BOARD_ROW_SIZE = 20
 
-# Card
+# Card Size
 CARD_WIDTH = 90
 CARD_HEIGHT = 45
 
-# Font
+# Font Size
 FONT_SIZE = 15
 FONT_COLOUR = (255, 255, 255)
 
@@ -33,5 +33,4 @@ GOAL_POSITIONS = [
     (14, 10),
     (14, 12)
 ]
-
 START_POSITION = (6, 10)

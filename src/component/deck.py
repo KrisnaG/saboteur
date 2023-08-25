@@ -1,4 +1,4 @@
-from card import PathCard, ActionCard
+from component.card import PathCard, ActionCard
 import random
 
 class Deck():
@@ -59,3 +59,6 @@ class Deck():
         assert len(self._deck) > 0, "There are no more cards in the deck"
 
         return self._deck.pop()
+    
+    def cards_remaining(self):
+        return len(self._deck)

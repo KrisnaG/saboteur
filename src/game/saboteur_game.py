@@ -1,22 +1,29 @@
 import pygame
 import constant.game_constants as gc
-import random
+
+from environment.saboteur_environment import SaboteurEnvironment
 
 class SaboteurGame:
     def __init__(self, environment):
         self._agents = {}
+        self._deck = environment.get_deck()
         
         assert type(environment).__name__ == 'SaboteurEnvironment', "environment must be an instance of a subclass of the class SaboteurEnvironment"
         self._environment = environment
         
         for index, player in environment.get_players().items():
             assert type(player[0]).__name__ == 'SaboteurPlayer', f"Player: {player} must be an instance of the class SaboteurPlayer"
+            for _ in range(gc.NUMBER_OF_CARDS):
+                player[2].append(self._deck.draw())
             self._agents[index] = player
 
         game_state = self._environment.get_game_state()
         game_board = game_state['game-board']
         self._n_cols = game_board.get_width()
         self._n_rows = game_board.get_height()
+        
+        # TODO REMOVE
+        SaboteurEnvironment.get_legal_actions(environment.get_game_state())
         
         # Initialise Pygame
         pygame.init()

@@ -5,13 +5,13 @@ Author:
 
 import os
 import shutil
-from component.card import PathCard
 
 from game.saboteur_game import SaboteurGame
 from environment.saboteur_environment import SaboteurEnvironment
 from player.saboteur_player import SaboteurPlayer
 from program.agent_program import human_agent
 from component.game_board import GameBoard
+from component.deck import Deck
 import constant.game_constants as gc
 
 
@@ -33,15 +33,18 @@ if __name__ == '__main__':
     Main entry point.
     """
     game_board = GameBoard()
+    deck = Deck()
     
     # 
-    game_environment = SaboteurEnvironment(game_board)
+    game_environment = SaboteurEnvironment(game_board, deck)
     
     # Create SaboteurPlayer instances for each player
     for player in range(gc.NUMBER_OF_PLAYERS):
         game_environment.add_player(SaboteurPlayer(f'P{player}', human_agent))
     
+    
     game = SaboteurGame(game_environment)
+    
     
     # Delete cache files
     delete_pycache("../src")

@@ -67,7 +67,7 @@ class GameBoard():
             x (int): The x-coordinate.
             y (int): The y-coordinate.
             path_card (PathCard): The path card to be placed.
-            board (GameBoard): The game board.
+            board (GridMap): The game board.
         Returns:
             bool: True if the card can be placed, False otherwise.
         """
@@ -83,7 +83,7 @@ class GameBoard():
             start_location (tuple[int, int]): The starting location (x, y).
             start_card (Card): The start card being placed.
             target_location (tuple[int, int]): The target location (x, y).
-            incoming_board (GameBoard): The game board with cards.
+            incoming_board (GridMap): The game board with cards.
         Returns:
             bool: True if the target is reachable from the start, False otherwise.
         """
