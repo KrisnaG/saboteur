@@ -60,8 +60,8 @@ class SaboteurPlayer(Agent):
             action_function=lambda: {'play-card': ('mend', None, None)}
         )
 
-        for row in gc.BOARD_ROW_SIZE:
-            for col in gc.BOARD_COL_SIZE:
+        for row in range(gc.BOARD_ROW_SIZE):
+            for col in range(gc.BOARD_COL_SIZE):
                 if (row, col) != gc.START_POSITION:
                     if (row, col) not in gc.GOAL_POSITIONS:
                         for path_type in PATH_CARD_TYPES:
@@ -90,7 +90,7 @@ class SaboteurPlayer(Agent):
                         )
 
         # Sabotage
-        for index in gc.NUMBER_OF_PLAYERS:
+        for index in range(gc.NUMBER_OF_PLAYERS):
             opponent = f'P{index}'
             self.add_action(
                 action_name=f'sabotage-{opponent}',

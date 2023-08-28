@@ -7,6 +7,7 @@ from une_ai.models import GameEnvironment
 import src.constant.game_constants as gc
 from src.component.card import ActionCard, PathCard
 from src.component.game_board import GameBoard
+from src.exception.invalid_action_exception import InvalidActionException
 from src.exception.invalid_move_exception import InvalidMoveException
 
 import random
@@ -213,7 +214,10 @@ class SaboteurEnvironment(GameEnvironment):
             # Turn card
             if action == 'turn':
                 card.turn_card()
-            game_board.add_path_card(x, y, card)
+            if GameBoard.can_place_card(x, y, card, game_board.get_board()):
+                game_board.add_path_card(x, y, card)
+            else:
+                raise InvalidMoveException(f"Cannot place path card at {x} {y}")
         else:
             for action_card in action_cards:
                 if action_card.get_action() == action:
@@ -233,7 +237,10 @@ class SaboteurEnvironment(GameEnvironment):
             elif action == 'dynamite':
                 x = parts[1]
                 y = parts[2]
-                game_board.remove_path_card(x, y)
+                if game_board.can_remove_card(x, y):
+                    game_board.remove_path_card(x, y)
+                else:
+                    raise InvalidMoveException(f"Cannot remove path card at {x} {y}")
             # Map
             elif action == 'map':
                 x = parts[1]
@@ -282,12 +289,15 @@ class SaboteurEnvironment(GameEnvironment):
         return new_game_state
 
     def state_transition(self, agent_actuators):
-        # Check actuator
+        # No transition possible
+        if 'play-card' not in agent_actuators.keys():
+            return
 
         action, position_opponent, card_type = agent_actuators['play-card']
 
         position = None
         opponent = None
+        action = None
 
         if isinstance(position_opponent, tuple):
             position = position_opponent
@@ -296,19 +306,35 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Place card
         if action == 'path' or action == 'turn':
-            pass
+            action = f'{action}-{position[0]}-{position[0]}-{card_type}'
         elif action == 'mend':
-            pass
-        elif action == 'dynamite':
-            pass
+            action = f'{action}'
+        elif action == 'dynamite' or action == 'map':
+            action = f'{action}-{position[0]}-{position[0]}'
         elif action == 'sabotage':
-            pass
-        elif action == 'map':
-            pass
+            action = f'{action}-{opponent}'
         elif action == 'pass':
-            pass
+            if card_type is None:
+                f'{action}-{card_type}'
+            else:
+                f'{action}-path-{card_type}'
 
-        # Reveal goal cards?
+        if action is None:
+            raise InvalidActionException("Invalid agent actuator action.")
+
+        new_state = GameEnvironment.transition_result(self.get_game_state(), action)
+
+        new_game_board: GameBoard = new_state['game_board']
+
+        # Reveal goal cards
+        for goal in gc.GOAL_POSITIONS:
+            if GameBoard.can_reach_target(goal, None, gc.START_POSITION, new_game_board.get_board()):
+                new_game_board.get_board().get_item_value(goal[0], goal[1]).reveal_card()
+
+        self._game_board = new_game_board
+        self._player_turn = new_state['player-turn']
+        self._players = new_state['players']
+        self._deck = new_state['deck']
 
     @staticmethod
     def turn(game_state):

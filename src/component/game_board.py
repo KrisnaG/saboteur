@@ -98,7 +98,7 @@ class GameBoard:
         queue = [start_location]
         board = incoming_board.copy()
 
-        # Add the start card to the start location
+        # Add the start card to the start location if it's not present
         if board.get_item_value(start_location[0], start_location[1]) is None:
             board.set_item_value(start_location[0], start_location[1], start_card)
 
@@ -189,6 +189,20 @@ class GameBoard:
         assert GameBoard.can_reach_target((x, y), path_card, gc.START_POSITION, self._board), \
             f"This is not a valid placement of card at ({x}, {y})"
         self._board.set_item_value(x, y, path_card)
+
+    def can_remove_card(self, x, y):
+        """
+        Check if a path card can be removed at the specified coordinates.\n
+        Args:
+            x (int): The x-coordinate.
+            y (int): The y-coordinate.
+        Returns:
+            bool: True if the card can be removed, False otherwise.
+        """
+        card = self._board.get_item_value(x, y)
+        return (GameBoard.is_on_board(x, y) and
+                card is not None and
+                not card.is_special_card())
 
     def remove_path_card(self, x, y):
         """

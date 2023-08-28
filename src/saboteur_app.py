@@ -39,8 +39,8 @@ if __name__ == '__main__':
     game_environment = SaboteurEnvironment(game_board, deck)
     
     # Create SaboteurPlayer instances for each player
-    for player in range(gc.NUMBER_OF_PLAYERS):
-        game_environment.add_player(SaboteurPlayer(f'P{player}', intelligent_agent))
+    for player_number in range(gc.NUMBER_OF_PLAYERS):
+        game_environment.add_player(SaboteurPlayer(f'P{player_number}', intelligent_agent))
 
     game = SaboteurGame(game_environment)
 

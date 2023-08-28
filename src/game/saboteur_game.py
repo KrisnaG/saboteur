@@ -13,11 +13,10 @@ class SaboteurGame:
         self._environment = environment
 
         for index, player in environment.get_players().items():
-            assert type(player[
-                            0]).__name__ == 'SaboteurPlayer', (f"Player: {player} must be an instance of the class "
-                                                               f"SaboteurPlayer")
+            assert type(player['player']).__name__ == 'SaboteurPlayer', \
+                (f"Player: {player} must be an instance of the class SaboteurPlayer")
             for _ in range(gc.NUMBER_OF_CARDS):
-                player[2].append(self._deck.draw())
+                player['hand'].append(self._deck.draw())
             self._agents[index] = player
 
         game_state = self._environment.get_game_state()
