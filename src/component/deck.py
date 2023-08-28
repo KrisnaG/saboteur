@@ -1,5 +1,11 @@
-from component.card import PathCard, ActionCard
+"""
+    This file has been provided by Jonathan Vitale.
+"""
+
 import random
+
+from src.component.card import PathCard, ActionCard
+
 
 class Deck():
     def __init__(self):

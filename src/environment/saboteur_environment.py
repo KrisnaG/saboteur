@@ -1,5 +1,8 @@
+"""
+    Author: Krisna Gusti (kgusti@myune.edu.au)
+"""
+
 from une_ai.models import GameEnvironment
-from une_ai.models import GridMap
 import src.constant.game_constants as gc
 from src.component.card import ActionCard, PathCard
 from src.component.game_board import GameBoard
@@ -23,20 +26,17 @@ class SaboteurEnvironment(GameEnvironment):
         next_number = (current_number + 1) % gc.NUMBER_OF_PLAYERS
         self._player_turn = f'P{next_number}'
 
-
     def get_deck(self):
         """
         Get the deck for the current environment.
         """
         return self._deck
 
-
     def get_players(self):
         """
         Get the players for the current environment.
         """
         return self._players
-
 
     def add_player(self, player):
         """
@@ -65,7 +65,6 @@ class SaboteurEnvironment(GameEnvironment):
 
         return player
 
-
     def get_game_state(self):
         """
             Get the current environment game state.
@@ -81,7 +80,7 @@ class SaboteurEnvironment(GameEnvironment):
 
         return game_state
 
-
+    @staticmethod
     def get_legal_actions(game_state):
         """
         Get the list of legal actions based on the current game state.\n
@@ -156,7 +155,7 @@ class SaboteurEnvironment(GameEnvironment):
 
         return legal_actions
 
-
+    @staticmethod
     def get_percepts(self):
         game_state = self.get_game_state()
         return {
@@ -165,18 +164,17 @@ class SaboteurEnvironment(GameEnvironment):
             'player': self._players[self._player_turn]
         }
 
-
+    @staticmethod
     def get_winner(game_state):
         pass
 
-
+    @staticmethod
     def is_terminal(game_state):
         pass
 
-
+    @staticmethod
     def payoff(game_state, player_name):
         pass
-
 
     def state_transition(self, agent_actuators):
         # Check actuator
@@ -188,7 +186,7 @@ class SaboteurEnvironment(GameEnvironment):
         # Reveal any special cards?
         pass
 
-
+    @staticmethod
     def transition_result(game_state, action):
         # Path
 
@@ -202,6 +200,6 @@ class SaboteurEnvironment(GameEnvironment):
 
         pass
 
-
+    @staticmethod
     def turn(game_state):
         return game_state['player-turn']

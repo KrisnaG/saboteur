@@ -1,4 +1,10 @@
-class Card():
+"""
+    This file has been mostly provided by Jonathan Vitale.
+    Author: Krisna Gusti (kgusti@myune.edu.au)
+"""
+
+
+class Card:
     pass
 
 
@@ -18,6 +24,7 @@ class InvalidTunnel(Exception):
     pass
 
 
+# Type of Path cards
 PATH_CARD_TYPES = [
     'cross-road',
     'vertical-tunnel',
@@ -35,6 +42,7 @@ PATH_CARD_TYPES = [
     'dead-end-south-west',
     'dead-end-west'
 ]
+
 
 class PathCard(Card):
 

@@ -1,7 +1,11 @@
-from une_ai.models import Agent, GridMap
+"""
+    Author: Krisna Gusti (kgusti@myune.edu.au)
+"""
+
+from une_ai.models import Agent
 import src.constant.game_constants as gc
 from src.component.game_board import GameBoard
-from src.component.card import Card, ActionCard, PathCard, PATH_CARD_TYPES
+from src.component.card import Card, PATH_CARD_TYPES
 
 
 class SaboteurPlayer(Agent):
@@ -44,7 +48,6 @@ class SaboteurPlayer(Agent):
                 (isinstance(action[1], tuple) or isinstance(action[1], str) or action[1] is None) and
                 (isinstance(action[2], str) or action[2] is None)
         )
-
 
     def add_all_actions(self):
         """

@@ -1,5 +1,7 @@
 """
+    Author: Krisna Gusti (kgusti@myune.edu.au)
 """
+
 
 # Players
 NUMBER_OF_PLAYERS = 8
@@ -28,9 +30,9 @@ GOLD = (212, 175, 55)
 
 
 # Starting positions
+START_POSITION = (6, 10)
 GOAL_POSITIONS = [
     (14, 8),
     (14, 10),
     (14, 12)
 ]
-START_POSITION = (6, 10)
