@@ -10,7 +10,7 @@ import src.constant.game_constants as gc
 from src.component.card import PathCard
 
 
-class GameBoard():
+class GameBoard:
 
     def __init__(self):
         """

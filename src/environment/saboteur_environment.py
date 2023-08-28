@@ -3,9 +3,12 @@
 """
 
 from une_ai.models import GameEnvironment
+
 import src.constant.game_constants as gc
 from src.component.card import ActionCard, PathCard
 from src.component.game_board import GameBoard
+from src.exception.invalid_move_exception import InvalidMoveException
+
 import random
 
 
@@ -17,6 +20,7 @@ class SaboteurEnvironment(GameEnvironment):
         self._number_of_saboteur = random.randrange(2, 4)
         self._chosen_saboteurs = random.sample(list(range(gc.NUMBER_OF_PLAYERS)), self._number_of_saboteur)
         self._deck = deck
+        self._revealed_goal_cards = []
 
     def _change_player(self):
         """
@@ -54,13 +58,14 @@ class SaboteurEnvironment(GameEnvironment):
         if player_number in self._chosen_saboteurs:
             player_type = "saboteur"
 
-        hand, sabotaged = [], []
+        hand, sabotaged, seen = [], [], []
 
         self._players[f'P{player_number}'] = {
-            player: player,
-            player_type: player_type,
-            hand: hand,
-            sabotaged: sabotaged
+            'player': player,
+            'player_type': player_type,
+            'hand': hand,
+            'sabotaged': sabotaged,
+            'seen': seen
         }
 
         return player
@@ -75,7 +80,8 @@ class SaboteurEnvironment(GameEnvironment):
             'game-board': self._game_board,
             'player-turn': self._player_turn,
             'players': self._players,
-            'deck': self._deck
+            'deck': self._deck,
+            'revealed': self._revealed_goal_cards
         }
 
         return game_state
@@ -121,7 +127,7 @@ class SaboteurEnvironment(GameEnvironment):
                                 legal_actions.append(f'path-{x}-{y}-{path_card.get_path_type()}')
 
                             # Turn card and check placements
-                            turned_card = PathCard(path_card.get_tunnels())
+                            turned_card = PathCard(path_card.get_tunnels(), path_card.get_path_type())
                             turned_card.turn_card()
                             if GameBoard.can_place_card(x, y, turned_card, game_board.get_board()):
                                 legal_actions.append(f'turn-{x}-{y}-{path_card.get_path_type()}')
@@ -155,13 +161,12 @@ class SaboteurEnvironment(GameEnvironment):
 
         return legal_actions
 
-    @staticmethod
     def get_percepts(self):
         game_state = self.get_game_state()
         return {
             'game-board-sensor': game_state['game-board'],
             'turn-taking-indicator': self._player_turn,
-            'player': self._players[self._player_turn]
+            'players': self._players
         }
 
     @staticmethod
@@ -176,29 +181,134 @@ class SaboteurEnvironment(GameEnvironment):
     def payoff(game_state, player_name):
         pass
 
+    @staticmethod
+    def transition_result(game_state, action_str):
+        # Extract action
+        parts = action_str.split('-')
+        action = parts[0]
+
+        # Extract game state
+        game_board: GameBoard = game_state['game-board']
+        player_turn = game_state['player-turn']
+        players = game_state['players']
+        deck = game_state['deck']
+        revealed_goal_cards = game_state['revealed']
+
+        # Extract player info
+        player = players[player_turn]
+        hand = player['hand']
+        path_cards = [card for card in hand if isinstance(card, PathCard)]
+        action_cards = [card for card in hand if isinstance(card, ActionCard)]
+        card = None
+
+        # Path
+        if action == 'path' or action == 'turn':
+            x = parts[1]
+            y = parts[2]
+            path_type = '-'.join(parts[3:])
+            for path_card in path_cards:
+                if path_card.get_path_type() == path_type:
+                    card = path_card
+                    break
+            # Turn card
+            if action == 'turn':
+                card.turn_card()
+            game_board.add_path_card(x, y, card)
+        else:
+            for action_card in action_cards:
+                if action_card.get_action() == action:
+                    card = action_card
+                    break
+            # Sabotage
+            if action == 'sabotage':
+                target = parts[1]
+                opponent = players[target]
+                opponent['sabotaged'].append('sabotaged')
+            elif action == 'mend':
+                if len(player['sabotaged']) > 0:
+                    player['sabotaged'].pop()
+                else:
+                    raise InvalidMoveException(f"Player: {player} has not been sabotaged.")
+            # Dynamite
+            elif action == 'dynamite':
+                x = parts[1]
+                y = parts[2]
+                game_board.remove_path_card(x, y)
+            # Map
+            elif action == 'map':
+                x = parts[1]
+                y = parts[2]
+                goal_card = game_board.get_board().get_item_value(x, y)
+                if not goal_card.is_special_card():
+                    raise InvalidMoveException("Cannot look at a card that is not a goal card.")
+                player['seen'].append(((x, y), goal_card.is_gold()))
+            # Pass
+            elif action == 'pass':
+                if parts[1] == 'path':
+                    path_type = '-'.join(parts[2:])
+                    for path_card in path_cards:
+                        if path_card.get_path_type() == path_type:
+                            card = path_card
+                            break
+                else:
+                    for action_card in action_cards:
+                        if action_card.get_action() == parts[1]:
+                            card = action_card
+                            break
+            else:
+                raise InvalidMoveException(f"Action type: {action} not found")
+
+        # Remove and draw card
+        if card is None:
+            raise InvalidMoveException("Not card found on player.")
+        hand.remove(card)
+        if deck.cards_remaining() > 0:
+            hand.append(deck.draw())
+
+        # Next player
+        current_number = int(player_turn[1:])
+        next_number = (current_number + 1) % gc.NUMBER_OF_PLAYERS
+        next_player_turn = f'P{next_number}'
+
+        # Game state
+        new_game_state = {
+            'game-board': game_board,
+            'player-turn': next_player_turn,
+            'players': players,
+            'deck': deck,
+            'revealed': revealed_goal_cards
+        }
+
+        return new_game_state
+
     def state_transition(self, agent_actuators):
         # Check actuator
 
+        action, position_opponent, card_type = agent_actuators['play-card']
+
+        position = None
+        opponent = None
+
+        if isinstance(position_opponent, tuple):
+            position = position_opponent
+        else:
+            opponent = position_opponent
+
         # Place card
+        if action == 'path' or action == 'turn':
+            pass
+        elif action == 'mend':
+            pass
+        elif action == 'dynamite':
+            pass
+        elif action == 'sabotage':
+            pass
+        elif action == 'map':
+            pass
+        elif action == 'pass':
+            pass
 
-        # Change player
-
-        # Reveal any special cards?
-        pass
-
-    @staticmethod
-    def transition_result(game_state, action):
-        # Path
-
-        # Sabotage
-
-        # Dynamite
-
-        # Map
-
-        # Pass
-
-        pass
+        # Reveal goal cards?
 
     @staticmethod
     def turn(game_state):
