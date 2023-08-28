@@ -1,30 +1,54 @@
 class Card():
     pass
 
+
 class ActionCard(Card):
 
     def __init__(self, action):
-        assert action in ['map', 'sabotage', 'mend', 'dynamite'], "The parameter action must be either map, sabotage, mend or dynamite"
+        assert action in ['map', 'sabotage', 'mend',
+                          'dynamite'], "The parameter action must be either map, sabotage, mend or dynamite"
 
         self._action = action
-    
+
     def get_action(self):
         return self._action
+
 
 class InvalidTunnel(Exception):
     pass
 
+
+PATH_CARD_TYPES = [
+    'cross-road',
+    'vertical-tunnel',
+    'horizontal-tunnel',
+    'vertical-junction',
+    'vertical-tunnel',
+    'turn',
+    'reversed-turn',
+    'dead-end-north-south',
+    'dead-end-north-east-south',
+    'dead-end-north-east-south-west',
+    'dead-end-west-north-east',
+    'dead-end-west-east',
+    'dead-end-south-east',
+    'dead-end-south-west',
+    'dead-end-west'
+]
+
 class PathCard(Card):
 
-    def __init__(self, tunnels, special_card=None):
+    def __init__(self, tunnels, path_type, special_card=None):
         assert isinstance(tunnels, list), "The parameter tunnels must be a list of tuples"
-        assert special_card in ['start', 'goal', 'gold', None], "The parameter special_card must be either None, start, goal or gold"
+        assert special_card in ['start', 'goal', 'gold',
+                                None], "The parameter special_card must be either None, start, goal or gold"
+        assert path_type in PATH_CARD_TYPES, "The parameter type must be a valid path card type"
 
         for tunnel in tunnels:
             if not self._is_valid_tunnel(tunnel):
                 raise InvalidTunnel("The tunnel '{0}' is an invalid one for this card.".format(tunnel))
-        
-        
+
+        self._path_type = path_type
         self._special_card = special_card
         self._revealed = True
         if special_card:
@@ -35,7 +59,8 @@ class PathCard(Card):
                 self._revealed = False
         else:
             self._tunnels = tunnels
-            
+
+    @staticmethod
     def cross_road(special_card=None):
         return PathCard(
             [
@@ -45,61 +70,80 @@ class PathCard(Card):
                 ('south', 'east'),
                 ('south', 'west'),
                 ('east', 'west')
-            ], special_card=special_card
+            ],
+            path_type='cross-road',
+            special_card=special_card
         )
-    
+
+    @staticmethod
     def vertical_tunnel():
         return PathCard(
             [
                 ('north', 'south')
-            ]
+            ],
+            path_type='vertical-tunnel'
         )
-    
+
+    @staticmethod
     def horizontal_tunnel():
         return PathCard(
             [
                 ('east', 'west')
-            ]
+            ],
+            path_type='horizontal-tunnel'
         )
-    
+
+    @staticmethod
     def vertical_junction():
         return PathCard(
             [
                 ('north', 'south'),
                 ('north', 'east'),
                 ('south', 'east')
-            ]
+            ],
+            path_type='vertical-junction'
         )
-    
+
+    @staticmethod
     def horizontal_junction():
         return PathCard(
             [
                 ('east', 'north'),
                 ('west', 'north'),
                 ('east', 'west')
-            ]
+            ],
+            path_type='horizontal-junction'
         )
-    
+
+    @staticmethod
     def turn():
         return PathCard(
             [
                 ('south', 'east')
-            ]
+            ],
+            path_type='turn'
         )
-    
+
+    @staticmethod
     def reversed_turn():
         return PathCard(
             [
                 ('south', 'west')
-            ]
+            ],
+            path_type='reversed-turn'
         )
-    
+
+    @staticmethod
     def dead_end(directions):
         tunnels = []
         for direction in directions:
             tunnels.append((direction, None))
-        return PathCard(tunnels)
-    
+        path_type = f"dead-end-{'-'.join(directions)}"
+        return PathCard(tunnels, path_type=path_type)
+
+    def get_path_type(self):
+        return self._path_type
+
     def _is_valid_tunnel(self, tunnel):
         if not isinstance(tunnel, tuple):
             return False
@@ -114,18 +158,21 @@ class PathCard(Card):
             return False
         if tunnel[0] == tunnel[1]:
             return False
-                
+
         return True
-    
+
     def is_special_card(self):
         return self._special_card is not None
-    
+
     def is_gold(self):
         return self._special_card == 'gold'
-    
+
+    def is_revealed(self):
+        return self._revealed
+
     def reveal_card(self):
         self._revealed = True
-    
+
     def turn_card(self):
         tunnels = []
         opposite = {
@@ -140,12 +187,12 @@ class PathCard(Card):
                 opposite[tunnel[1]] if tunnel[1] is not None else None
             )
             tunnels.append(new_tunnel)
-        
+
         self._tunnels = tunnels
-    
+
     def get_tunnels(self):
         return self._tunnels.copy()
-    
+
     def __str__(self):
         card_rep = ['   ', '   ', '   ']
         if self._revealed:
@@ -173,4 +220,3 @@ class PathCard(Card):
         else:
             return '   \n ? \n   '
         return '\n'.join(card_rep)
-    

@@ -1,7 +1,7 @@
 import pygame
-import constant.game_constants as gc
+import src.constant.game_constants as gc
 
-from environment.saboteur_environment import SaboteurEnvironment
+from src.environment.saboteur_environment import SaboteurEnvironment
 
 class SaboteurGame:
     def __init__(self, environment):
@@ -21,9 +21,6 @@ class SaboteurGame:
         game_board = game_state['game-board']
         self._n_cols = game_board.get_width()
         self._n_rows = game_board.get_height()
-        
-        # TODO REMOVE
-        SaboteurEnvironment.get_legal_actions(environment.get_game_state())
         
         # Initialise Pygame
         pygame.init()
