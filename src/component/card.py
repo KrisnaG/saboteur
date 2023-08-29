@@ -66,6 +66,8 @@ class PathCard(Card):
             self._tunnels = cross_road.get_tunnels()
             if special_card in ['goal', 'gold']:
                 self._revealed = False
+            if special_card == 'gold':
+                self._path_type = 'gold'
         else:
             self._tunnels = tunnels
 
@@ -152,6 +154,11 @@ class PathCard(Card):
 
     def get_path_type(self):
         return self._path_type
+
+    def get_image_type(self):
+        if self.is_special_card() and not self.is_revealed():
+            return 'hidden'
+        return self.get_path_type()
 
     def _is_valid_tunnel(self, tunnel):
         if not isinstance(tunnel, tuple):

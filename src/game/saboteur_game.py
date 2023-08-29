@@ -56,61 +56,12 @@ class SaboteurGame:
         # self._agents[cur_colour].act(actions, self._environment)
         pass
 
-    def _draw_box(self, row, col, card):
-        pass
-        # x_coord = col * gc.CARD_WIDTH
-        # y_coord = row * gc.CARD_HEIGHT
-
-        # # Draw a card rectangle with white outline
-        # pygame.draw.rect(self._display, gc.WHITE, (x_coord, y_coord, gc.CARD_WIDTH, gc.CARD_HEIGHT), 2)
-
-        # if card is not None:
-        #     # Draw card content (assuming card has a __str__ method)
-        #     card_text = str(card)
-        #     font = pygame.font.Font(None, gc.FONT_SIZE)
-        #     text_surface = font.render(card_text, True, gc.WHITE)
-        #     text_rect = text_surface.get_rect(center=(x_coord + gc.CARD_WIDTH // 2, y_coord + gc.CARD_HEIGHT // 2))
-
-        #     # Blit card text onto the card rectangle
-        #     self._display.blit(text_surface, text_rect)
-
-        # game_state = self._environment.get_game_state()
-        # game_board = game_state['game-board']
-        # x_coord = self._padding_left + x*self._box_size
-        # y_coord = self._padding_top + y*self._box_size
-
-        # surface = pygame.Surface((self._box_size,self._box_size))
-
-        # pygame.draw.rect(surface, color, surface.get_rect())
-        # self._display.blit(surface, (x_coord, y_coord))
-
-        # cur_checker = game_board.get_item_value(x, y)
-
-        # if cur_checker == 'Y':
-        #     checker_color = YELLOW
-        # elif cur_checker == 'R':
-        #     checker_color = RED
-        # elif cur_checker == 'W':
-        #     checker_color = GRAY
-        # else:
-        #     # no checker
-        #     checker_color = WHITE
-        # checker_surface = pygame.Surface((self._box_size,self._box_size))
-        # checker_surface.fill(color)
-        # radius = int((self._box_size/2)*0.8)
-        # center = int(self._box_size/2)
-        # pygame.draw.circle(checker_surface, checker_color, (center, center), radius)
-        # self._display.blit(checker_surface, (x_coord, y_coord))
-
     def _draw_board(self):
         # Clear the background
         self._display.fill(gc.BLACK)
 
         game_state = self._environment.get_game_state()
         game_board = game_state['game-board']
-
-        font_path = pygame.font.match_font('Arial')
-        font = pygame.font.Font(font_path, gc.FONT_SIZE)
 
         for row in range(self._n_cols):
             for col in range(self._n_rows):
@@ -119,56 +70,19 @@ class SaboteurGame:
                 y_coord = row * gc.CARD_HEIGHT
 
                 # Draw a card rectangle
-                pygame.draw.rect(self._display, gc.WHITE, (x_coord, y_coord, gc.CARD_WIDTH, gc.CARD_HEIGHT), 1)
+                pygame.draw.rect(self._display, gc.BROWN, (x_coord, y_coord, gc.CARD_WIDTH, gc.CARD_HEIGHT), 1)
 
                 if card is not None:
-                    card_str = str(card)
-                    lines = card_str.split("\n")
-                    # Calculate the total height of the multiline text
-                    total_height = len(lines) * font.get_height()
-
-                    # Create a surface to render the multiline text
-                    text_surface = pygame.Surface((gc.CARD_WIDTH, total_height))
-
-                    # Render each line of text
-                    for i, line in enumerate(lines):
-                        line_surface = font.render(line, True, gc.WHITE)
-                        text_surface.blit(line_surface, (0, i * font.get_height()))
-
-                    # Get the center of the card
-                    center_x = x_coord + gc.CARD_WIDTH // 2
-                    center_y = y_coord + gc.CARD_HEIGHT // 2
-
-                    # Calculate the position to blit the text surface
-                    text_rect = text_surface.get_rect(center=(center_x, center_y))
-
-                    # Blit the multiline text surface onto the display
-                    self._display.blit(text_surface, text_rect)
+                    card_type = card.get_image_type()
+                    image_path = f"resource/card/{card_type}.png"
+                    try:
+                        card_image = pygame.image.load(image_path)
+                        card_image = pygame.transform.scale(card_image, (gc.CARD_WIDTH, gc.CARD_HEIGHT))
+                        self._display.blit(card_image, (x_coord, y_coord))
+                    except pygame.error:
+                        print(f"Image not found: {image_path}")
 
         pygame.display.update()
-        # font = pygame.font.Font(None, gc.FONT_SIZE)
-        # text_surface = font.render(card_str, True, gc.WHITE)
-        # text_rect = text_surface.get_rect(center=(x_coord + gc.CARD_WIDTH // 2, y_coord + gc.CARD_HEIGHT // 2))
-        # self._display.blit(text_surface, text_rect)
-
-        # card = game_board.get_board().get_item_value(row, col)
-        # self._draw_box(row, col, card)
-
-        # x_coord = col * gc.CARD_WIDTH
-        # y_coord = row * gc.CARD_HEIGHT
-
-        # # Draw a card rectangle with white outline
-        # pygame.draw.rect(self._display, gc.WHITE, (x_coord, y_coord, gc.CARD_WIDTH, gc.CARD_HEIGHT), 2)
-
-        # if card is not None:
-        #     # Draw card content (assuming card has a __str__ method)
-        #     card_text = str(card)
-        #     font = pygame.font.Font(None, gc.FONT_SIZE)
-        #     text_surface = font.render(card_text, True, gc.WHITE)
-        #     text_rect = text_surface.get_rect(center=(x_coord + gc.CARD_WIDTH // 2, y_coord + gc.CARD_HEIGHT // 2))
-
-        #     # Blit card text onto the card rectangle
-        #     self._display.blit(text_surface, text_rect)
 
     def _draw_frame(self):
         self._draw_board()

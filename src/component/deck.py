@@ -1,5 +1,5 @@
 """
-    This file has been provided by Jonathan Vitale.
+    This file has been mostly provided by Jonathan Vitale.
 """
 
 import random
@@ -62,8 +62,7 @@ class Deck:
         random.shuffle(self._deck)
 
     def draw(self):
-        assert len(self._deck) > 0, "There are no more cards in the deck"
-
+        assert self.cards_remaining() > 0, "There are no more cards in the deck"
         return self._deck.pop()
     
     def cards_remaining(self):
