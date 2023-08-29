@@ -164,19 +164,59 @@ class SaboteurEnvironment(GameEnvironment):
 
     def get_percepts(self):
         game_state = self.get_game_state()
+        game_board = game_state['game-board']
+        player = game_state[self._player_turn]
+
         return {
-            'game-board-sensor': game_state['game-board'],
+            'game-board-sensor': game_board,
             'turn-taking-indicator': self._player_turn,
-            'players': self._players
+            'hand-sensor': player['hand'],
+            'sabotage-sensor': player['sabotage'],
+            'seen-sensor': player['seen'],
+            'special-card-sensor': self._revealed_goal_cards
         }
 
     @staticmethod
     def get_winner(game_state):
-        pass
+        """
+        Determines whether the game state has a winner.\n
+        Args:
+            game_state (dict): A dictionary representing the current state of the game.
+        Returns:
+            str: gold-miner, saboteur or None
+        """
+        game_board: GameBoard = game_state['game-board']
+        deck = game_state['deck']
+        players = game_state['players']
+        board = game_board.get_board()
+
+        # Gold Miners Win - Gold card is reached
+        for goal in gc.GOAL_POSITIONS:
+            goal_card = board.get_item_value(goal[0], goal[1])
+            if goal_card.is_gold() and goal_card.is_revealed():
+                if GameBoard.can_reach_target(gc.START_POSITION, None, goal, board):
+                    return "gold-miner"
+
+        # Saboteurs Win - No cards remaining which is equal to no actions remaining
+        empty_deck = len(deck.cards_remaining) <= 0
+        empty_player_hands = all(len(player['hand']) <= 0 for player in players)
+
+        if empty_deck and empty_player_hands:
+            return 'saboteur'
+
+        return None
 
     @staticmethod
     def is_terminal(game_state):
-        pass
+        """
+        Determines whether the game state represents a terminal state.\n
+        Args:
+            game_state (dict): A dictionary representing the current state of the game.
+        Returns:
+            bool: True if the game state is terminal, False otherwise.
+        """
+        winner = SaboteurEnvironment.get_winner(game_state)
+        return winner is not None
 
     @staticmethod
     def payoff(game_state, player_name):
@@ -184,6 +224,14 @@ class SaboteurEnvironment(GameEnvironment):
 
     @staticmethod
     def transition_result(game_state, action_str):
+        """
+        Transitions a game state from the given action.\n
+        Args:
+            game_state (dict): A dictionary representing the current state of the game.
+            action_str (str): Action to execute on game state.
+        Returns:
+            dict: The new game state.
+        """
         # Extract action
         parts = action_str.split('-')
         action = parts[0]
@@ -204,8 +252,8 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Path
         if action == 'path' or action == 'turn':
-            x = parts[1]
-            y = parts[2]
+            x = int(parts[1])
+            y = int(parts[2])
             path_type = '-'.join(parts[3:])
             for path_card in path_cards:
                 if path_card.get_path_type() == path_type:
@@ -235,16 +283,16 @@ class SaboteurEnvironment(GameEnvironment):
                     raise InvalidMoveException(f"Player: {player} has not been sabotaged.")
             # Dynamite
             elif action == 'dynamite':
-                x = parts[1]
-                y = parts[2]
+                x = int(parts[1])
+                y = int(parts[2])
                 if game_board.can_remove_card(x, y):
                     game_board.remove_path_card(x, y)
                 else:
                     raise InvalidMoveException(f"Cannot remove path card at {x} {y}")
             # Map
             elif action == 'map':
-                x = parts[1]
-                y = parts[2]
+                x = int(parts[1])
+                y = int(parts[2])
                 goal_card = game_board.get_board().get_item_value(x, y)
                 if not goal_card.is_special_card():
                     raise InvalidMoveException("Cannot look at a card that is not a goal card.")
@@ -289,6 +337,11 @@ class SaboteurEnvironment(GameEnvironment):
         return new_game_state
 
     def state_transition(self, agent_actuators):
+        """
+        Transitions the state of the game.
+        Args:
+            agent_actuators: A agents actuator action.
+        """
         # No transition possible
         if 'play-card' not in agent_actuators.keys():
             return
@@ -328,8 +381,11 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Reveal goal cards
         for goal in gc.GOAL_POSITIONS:
-            if GameBoard.can_reach_target(goal, None, gc.START_POSITION, new_game_board.get_board()):
-                new_game_board.get_board().get_item_value(goal[0], goal[1]).reveal_card()
+            card = new_game_board.get_board().get_item_value(goal[0], goal[1])
+            if not card.is_revealed():
+                if GameBoard.can_reach_target(goal, None, gc.START_POSITION, new_game_board.get_board()):
+                    card.reveal_card()
+                    self._revealed_goal_cards.append(card)
 
         self._game_board = new_game_board
         self._player_turn = new_state['player-turn']
@@ -338,4 +394,11 @@ class SaboteurEnvironment(GameEnvironment):
 
     @staticmethod
     def turn(game_state):
+        """
+        Gets the players turn from the current game state.
+        Args:
+            game_state (dict): A dictionary representing the current state of the game.
+        Returns:
+            str: The current players turn.
+        """
         return game_state['player-turn']

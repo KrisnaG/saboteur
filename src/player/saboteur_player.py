@@ -28,9 +28,41 @@ class SaboteurPlayer(Agent):
                     isinstance(cell, (Card, type(None))) for row in game_board.get_board_map() for cell in row)
         )
 
+        # Hand sensor
+        self.add_sensor(
+            sensor_name='hand-sensor',
+            initial_value=[],
+            validation_function=lambda hand:
+                isinstance(hand, list) and
+                all(isinstance(card, (Card, type(None))) for card in hand)
+        )
+
+        # Sabotaged sensor
+        self.add_sensor(
+            sensor_name='sabotage-sensor',
+            initial_value=[],
+            validation_function=lambda sabotage:
+                isinstance(sabotage, list) and
+                all(isinstance(card, str) for card in sabotage)
+        )
+
         # Turn Sensor
+        self.add_sensor(
+            sensor_name='turn-taking-indicator',
+            initial_value='P0',
+            validation_function=lambda turn:
+                isinstance(turn, str) and
+                turn in [f'P{i}' for i in range(gc.NUMBER_OF_PLAYERS)]
+        )
 
         # Revealed Special Card Sensor
+        self.add_sensor(
+            sensor_name='special-card-sensor',
+            initial_value=[],
+            validation_function=lambda cards:
+                isinstance(cards, list) and
+                all(isinstance(card, (Card, type(None))) for card in cards)
+        )
 
     def add_all_actuators(self):
         """

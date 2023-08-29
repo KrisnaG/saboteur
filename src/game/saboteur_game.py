@@ -39,6 +39,21 @@ class SaboteurGame:
         self._display.fill(gc.BLACK)
 
     def _play_step(self):
+        # game_state = self._environment.get_game_state()
+        # if type(self._environment).is_terminal(game_state):
+        #     return
+        #
+        # cur_colour = type(self._environment).turn(game_state)
+        #
+        # # SENSE
+        # self._agents[cur_colour].sense(self._environment)
+        # # THINK
+        # actions = self._agents[cur_colour].think()
+        # player = 'Yellow' if cur_colour == 'Y' else 'Red'
+        # if len(actions) != 0:
+        #     self._last_action = "{0} player played the move '{1}'".format(player, actions[0])
+        # # ACT
+        # self._agents[cur_colour].act(actions, self._environment)
         pass
 
     def _draw_box(self, row, col, card):
