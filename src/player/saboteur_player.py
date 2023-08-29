@@ -2,7 +2,8 @@
     Author: Krisna Gusti (kgusti@myune.edu.au)
 """
 
-from une_ai.models import Agent
+from une_ai.models import Agent, GridMap
+
 import src.constant.game_constants as gc
 from src.component.game_board import GameBoard
 from src.component.card import Card, PATH_CARD_TYPES
@@ -23,7 +24,7 @@ class SaboteurPlayer(Agent):
             sensor_name='game-board-sensor',
             initial_value=GameBoard(),
             validation_function=lambda game_board:
-                isinstance(game_board, GameBoard) and
+                isinstance(game_board.get_board(), GridMap) and
                 all(
                     isinstance(cell, (Card, type(None))) for row in game_board.get_board_map() for cell in row)
         )

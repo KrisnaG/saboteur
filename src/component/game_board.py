@@ -219,23 +219,3 @@ class GameBoard:
             ("There is no valid card to remove at coordinates ({0}, {1})".format(x, y))
 
         self._board.set_item_value(x, y, None)
-
-    def __str__(self):
-        """
-        Generate a string representation of the game board.\n
-        Returns:
-            str: The string representation of the game board.
-        """
-        no_card = '   \n   \n   '
-        board_map = self._board.get_map()
-        board_str = ''
-        for row in board_map:
-            for i in range(3):
-                for card in row:
-                    if card is None:
-                        board_str += no_card.split('\n')[i]
-                    else:
-                        board_str += str(card).split('\n')[i]
-                board_str += '\n'
-
-        return board_str

@@ -1,3 +1,7 @@
+"""
+    Author: Krisna Gusti (kgusti@myune.edu.au)
+"""
+
 import pygame
 import src.constant.game_constants as gc
 
@@ -14,7 +18,7 @@ class SaboteurGame:
 
         for index, player in environment.get_players().items():
             assert type(player['player']).__name__ == 'SaboteurPlayer', \
-                (f"Player: {player} must be an instance of the class SaboteurPlayer")
+                f"Player: {player} must be an instance of the class SaboteurPlayer"
             for _ in range(gc.NUMBER_OF_CARDS):
                 player['hand'].append(self._deck.draw())
             self._agents[index] = player
@@ -23,6 +27,8 @@ class SaboteurGame:
         game_board = game_state['game-board']
         self._n_cols = game_board.get_width()
         self._n_rows = game_board.get_height()
+
+        self._last_action = ""
 
         # Initialise Pygame
         pygame.init()
@@ -39,22 +45,25 @@ class SaboteurGame:
         self._display.fill(gc.BLACK)
 
     def _play_step(self):
-        # game_state = self._environment.get_game_state()
-        # if type(self._environment).is_terminal(game_state):
-        #     return
-        #
-        # cur_colour = type(self._environment).turn(game_state)
-        #
-        # # SENSE
-        # self._agents[cur_colour].sense(self._environment)
-        # # THINK
-        # actions = self._agents[cur_colour].think()
-        # player = 'Yellow' if cur_colour == 'Y' else 'Red'
-        # if len(actions) != 0:
-        #     self._last_action = "{0} player played the move '{1}'".format(player, actions[0])
-        # # ACT
-        # self._agents[cur_colour].act(actions, self._environment)
-        pass
+        game_state = self._environment.get_game_state()
+
+        # Game over
+        if type(self._environment).is_terminal(game_state):
+            return
+
+        current_player = type(self._environment).turn(game_state)
+
+        # SENSE
+        self._agents[current_player]['player'].sense(self._environment)
+
+        # THINK
+        actions = self._agents[current_player]['player'].think()
+
+        if len(actions) != 0:
+            self._last_action = f"{current_player}: {actions[0]}"
+
+        # ACT
+        self._agents[current_player]['player'].act(actions, self._environment)
 
     def _draw_board(self):
         # Clear the background
@@ -84,8 +93,32 @@ class SaboteurGame:
 
         pygame.display.update()
 
+    def _draw_text(self, text_message, padding_top, orientation):
+        font = pygame.font.SysFont(gc.FONT, gc.FONT_SIZE)
+        text_size = font.size(text_message)
+        text = font.render(text_message, True, gc.FONT_COLOUR)
+        top = (gc.CARD_HEIGHT * gc.BOARD_ROW_SIZE) + padding_top
+        if orientation == 'center':
+            left = int((gc.DISPLAY_HEIGHT - text_size[0])/2)
+        elif orientation == 'left':
+            left = 20
+        elif orientation == 'right':
+            left = gc.DISPLAY_WIDTH - text_size[0]
+        else:
+            left = 0
+        self._display.blit(text, (left, top))
+
+    def _draw_game_over(self):
+        pass
+
     def _draw_frame(self):
         self._draw_board()
+        self._draw_text(f"Last action: {self._last_action}", 20, 'left')
+        if type(self._environment).is_terminal(self._environment.get_game_state()):
+            self._draw_game_over()
+        else:
+            player = type(self._environment).turn(self._environment.get_game_state())
+            self._draw_text(f"Player Turn: {player}", 90, 'left')
 
     def main(self):
         running = True
@@ -101,3 +134,6 @@ class SaboteurGame:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     running = False
+
+            # sense - think - act
+            self._play_step()

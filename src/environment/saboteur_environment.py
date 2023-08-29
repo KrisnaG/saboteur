@@ -165,13 +165,13 @@ class SaboteurEnvironment(GameEnvironment):
     def get_percepts(self):
         game_state = self.get_game_state()
         game_board = game_state['game-board']
-        player = game_state[self._player_turn]
+        player = game_state['players'][self._player_turn]
 
         return {
             'game-board-sensor': game_board,
             'turn-taking-indicator': self._player_turn,
             'hand-sensor': player['hand'],
-            'sabotage-sensor': player['sabotage'],
+            'sabotage-sensor': player['sabotaged'],
             'seen-sensor': player['seen'],
             'special-card-sensor': self._revealed_goal_cards
         }
@@ -198,8 +198,8 @@ class SaboteurEnvironment(GameEnvironment):
                     return "gold-miner"
 
         # Saboteurs Win - No cards remaining which is equal to no actions remaining
-        empty_deck = len(deck.cards_remaining) <= 0
-        empty_player_hands = all(len(player['hand']) <= 0 for player in players)
+        empty_deck = deck.cards_remaining() <= 0
+        empty_player_hands = all(len(players[player]['hand']) <= 0 for player in players)
 
         if empty_deck and empty_player_hands:
             return 'saboteur'
@@ -235,6 +235,10 @@ class SaboteurEnvironment(GameEnvironment):
         # Extract action
         parts = action_str.split('-')
         action = parts[0]
+
+        if len(parts) <= 1:
+            # TODO throw error
+            return game_state
 
         # Extract game state
         game_board: GameBoard = game_state['game-board']
@@ -350,7 +354,7 @@ class SaboteurEnvironment(GameEnvironment):
 
         position = None
         opponent = None
-        action = None
+        action_str = None
 
         if isinstance(position_opponent, tuple):
             position = position_opponent
@@ -359,25 +363,25 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Place card
         if action == 'path' or action == 'turn':
-            action = f'{action}-{position[0]}-{position[0]}-{card_type}'
+            action_str = f'{action}-{position[0]}-{position[0]}-{card_type}'
         elif action == 'mend':
-            action = f'{action}'
+            action_str = f'{action}'
         elif action == 'dynamite' or action == 'map':
-            action = f'{action}-{position[0]}-{position[0]}'
+            action_str = f'{action}-{position[0]}-{position[0]}'
         elif action == 'sabotage':
-            action = f'{action}-{opponent}'
+            action_str = f'{action}-{opponent}'
         elif action == 'pass':
             if card_type is None:
-                f'{action}-{card_type}'
+                action_str = f'{action}-{card_type}'
             else:
-                f'{action}-path-{card_type}'
+                action_str = f'{action}-path-{card_type}'
 
-        if action is None:
+        if action is None or action_str is None:
             raise InvalidActionException("Invalid agent actuator action.")
 
-        new_state = GameEnvironment.transition_result(self.get_game_state(), action)
+        new_state = SaboteurEnvironment.transition_result(self.get_game_state(), action)
 
-        new_game_board: GameBoard = new_state['game_board']
+        new_game_board = new_state['game-board']
 
         # Reveal goal cards
         for goal in gc.GOAL_POSITIONS:
