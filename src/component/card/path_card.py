@@ -283,3 +283,11 @@ class PathCard(Card):
             list: A list of tuples representing the card's tunnel configuration.
         """
         return self._tunnels.copy()
+
+    def get_type(self):
+        """
+        Get the path type associated with the card.\n
+        Returns:
+            str: The path type associated with the card.
+        """
+        return self._path_type

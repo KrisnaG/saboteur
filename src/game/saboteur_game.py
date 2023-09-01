@@ -121,7 +121,7 @@ class SaboteurGame:
         text = font.render(text_message, True, gc.FONT_COLOUR)
         top = (gc.CARD_HEIGHT * gc.BOARD_ROW_SIZE) + padding_top
         if orientation == 'center':
-            left = int((gc.DISPLAY_HEIGHT - text_size[0])/2)
+            left = int((gc.DISPLAY_HEIGHT - text_size[0]) / 2) + 200
         elif orientation == 'left':
             left = 20
         elif orientation == 'right':
@@ -131,7 +131,41 @@ class SaboteurGame:
         self._display.blit(text, (left, top))
 
     def _draw_game_over(self):
-        pass
+        """
+        Draw a text message for the winner on the Pygame display.
+        """
+        winner = type(self._environment).get_winner(self._environment.get_game_state())
+        self._draw_text(f"WINNERS: {winner}!", gc.FIRST_LINE, 'left')
+
+    def _draw_saboteurs(self):
+        """
+        Draw a text message for the saboteur players.
+        """
+        saboteurs = ', '.join([player for player in self._environment.get_players() if
+                               self._environment.get_players()[player]['player-type'] == 'saboteur'])
+        self._draw_text(f"Saboteurs: {saboteurs}", gc.SECOND_LINE, 'left')
+
+    def _draw_gold_miners(self):
+        """
+        Draw a text message for the gold mine players.
+        """
+        gold_miner = ', '.join([player for player in self._environment.get_players() if
+                                self._environment.get_players()[player]['player-type'] == 'gold-miner'])
+        self._draw_text(f"Gold Miners: {gold_miner}", gc.THIRD_LINE, 'left')
+
+    def _draw_players_cards(self):
+        """
+        Draw a text messages for all the players cards.
+        """
+        players = self._environment.get_players()
+        line_position = gc.FIRST_LINE
+        for index, key in enumerate(players):
+            cards = ', '.join(card.get_type() for card in players[key]['hand'])
+            if index % 2 == 0:
+                self._draw_text(f"{key}: {cards}", line_position, 'center')
+            else:
+                self._draw_text(f"{key}: {cards}", line_position, 'right')
+                line_position += gc.SPACING
 
     def _draw_frame(self):
         """
@@ -139,12 +173,15 @@ class SaboteurGame:
         """
         self._reset_bg()
         self._draw_board()
-        self._draw_text(f"Last action: {self._last_action}", 20, 'left')
+        self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
         if type(self._environment).is_terminal(self._environment.get_game_state()):
             self._draw_game_over()
         else:
             player = type(self._environment).turn(self._environment.get_game_state())
-            self._draw_text(f"Player Turn: {player}", 90, 'left')
+            self._draw_text(f"Player Turn: {player}", gc.FIRST_LINE, 'left')
+        self._draw_saboteurs()
+        self._draw_gold_miners()
+        self._draw_players_cards()
 
     def main(self):
         """

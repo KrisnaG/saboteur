@@ -25,3 +25,11 @@ class ActionCard(Card):
             str: The action associated with the card ('map', 'sabotage', 'mend', 'dynamite').
         """
         return self._action
+
+    def get_type(self):
+        """
+        Get the action type associated with the card.\n
+        Returns:
+            str: The action associated with the card ('map', 'sabotage', 'mend', 'dynamite').
+        """
+        return self._action
