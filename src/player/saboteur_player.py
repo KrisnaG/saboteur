@@ -5,6 +5,7 @@
 from une_ai.models import Agent, GridMap
 
 import src.constant.game_constants as gc
+from src.component.deck import Deck
 from src.component.game_board import GameBoard
 from src.component.card import Card, PATH_CARD_TYPES
 
@@ -29,6 +30,49 @@ class SaboteurPlayer(Agent):
                     isinstance(cell, (Card, type(None))) for row in game_board.get_board_map() for cell in row)
         )
 
+        # Turn Sensor
+        self.add_sensor(
+            sensor_name='turn-taking-indicator',
+            initial_value='P0',
+            validation_function=lambda turn:
+                isinstance(turn, str) and
+                turn in [f'P{i}' for i in range(gc.NUMBER_OF_PLAYERS)]
+        )
+
+        # Deck Sensor
+        self.add_sensor(
+            sensor_name='deck-sensor',
+            initial_value=Deck(),
+            validation_function=lambda deck:
+                isinstance(deck, object)
+        )
+
+        # Revealed Special Card Sensor
+        self.add_sensor(
+            sensor_name='revealed-sensor',
+            initial_value=[],
+            validation_function=lambda cards:
+                isinstance(cards, list) and
+                all(isinstance(card, (Card, type(None))) for card in cards)
+        )
+
+        # Player sensor
+        self.add_sensor(
+            sensor_name='player-sensor',
+            initial_value=None,
+            validation_function=lambda player:
+                isinstance(player, (dict, type(None)))
+        )
+
+        # Player Type sensor
+        self.add_sensor(
+            sensor_name='player-type-sensor',
+            initial_value='gold-miner',
+            validation_function=lambda player_type:
+                isinstance(player_type, str) and
+                player_type in ['gold-miner', 'saboteur']
+        )
+
         # Hand sensor
         self.add_sensor(
             sensor_name='hand-sensor',
@@ -40,29 +84,11 @@ class SaboteurPlayer(Agent):
 
         # Sabotaged sensor
         self.add_sensor(
-            sensor_name='sabotage-sensor',
+            sensor_name='sabotaged-sensor',
             initial_value=[],
             validation_function=lambda sabotage:
                 isinstance(sabotage, list) and
                 all(isinstance(card, str) for card in sabotage)
-        )
-
-        # Turn Sensor
-        self.add_sensor(
-            sensor_name='turn-taking-indicator',
-            initial_value='P0',
-            validation_function=lambda turn:
-                isinstance(turn, str) and
-                turn in [f'P{i}' for i in range(gc.NUMBER_OF_PLAYERS)]
-        )
-
-        # Revealed Special Card Sensor
-        self.add_sensor(
-            sensor_name='special-card-sensor',
-            initial_value=[],
-            validation_function=lambda cards:
-                isinstance(cards, list) and
-                all(isinstance(card, (Card, type(None))) for card in cards)
         )
 
         # Seen Sensor (from using Map card)
@@ -71,7 +97,7 @@ class SaboteurPlayer(Agent):
             initial_value=[],
             validation_function=lambda cards:
                 isinstance(cards, list) and
-                all(isinstance(card, (Card, type(None))) for card in cards)
+                all(isinstance(card, tuple) for card in cards)
         )
 
     def add_all_actuators(self):

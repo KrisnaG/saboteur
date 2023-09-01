@@ -60,6 +60,7 @@ class PathCard(Card):
         self._path_type = path_type
         self._special_card = special_card
         self._revealed = True
+        self._is_turned = False
         if special_card:
             # special cards are all cross roads
             cross_road = PathCard.cross_road()
@@ -205,6 +206,10 @@ class PathCard(Card):
             tunnels.append(new_tunnel)
 
         self._tunnels = tunnels
+        self._is_turned = not self._is_turned
+
+    def is_card_turned(self):
+        return self._is_turned
 
     def get_tunnels(self):
         return self._tunnels.copy()

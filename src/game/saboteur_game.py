@@ -66,9 +66,6 @@ class SaboteurGame:
         self._agents[current_player]['player'].act(actions, self._environment)
 
     def _draw_board(self):
-        # Clear the background
-        self._display.fill(gc.BLACK)
-
         game_state = self._environment.get_game_state()
         game_board = game_state['game-board']
 
@@ -87,6 +84,9 @@ class SaboteurGame:
                     try:
                         card_image = pygame.image.load(image_path)
                         card_image = pygame.transform.scale(card_image, (gc.CARD_WIDTH, gc.CARD_HEIGHT))
+                        if card.is_card_turned():
+                            card_image = pygame.transform.rotate(card_image, 180)
+
                         self._display.blit(card_image, (x_coord, y_coord))
                     except pygame.error:
                         print(f"Image not found: {image_path}")
@@ -112,6 +112,7 @@ class SaboteurGame:
         pass
 
     def _draw_frame(self):
+        self._display.fill(gc.BLACK)
         self._draw_board()
         self._draw_text(f"Last action: {self._last_action}", 20, 'left')
         if type(self._environment).is_terminal(self._environment.get_game_state()):
@@ -137,3 +138,4 @@ class SaboteurGame:
 
             # sense - think - act
             self._play_step()
+            pygame.time.delay(2000)

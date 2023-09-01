@@ -63,7 +63,7 @@ class SaboteurEnvironment(GameEnvironment):
 
         self._players[f'P{player_number}'] = {
             'player': player,
-            'player_type': player_type,
+            'player-type': player_type,
             'hand': hand,
             'sabotaged': sabotaged,
             'seen': seen
@@ -158,7 +158,7 @@ class SaboteurEnvironment(GameEnvironment):
                 if isinstance(card, PathCard):
                     legal_actions.append(f'pass-path-{card.get_path_type()}')
                 else:
-                    legal_actions.append(f'pass-{card.get_action}')
+                    legal_actions.append(f'pass-{card.get_action()}')
 
         return legal_actions
 
@@ -170,10 +170,13 @@ class SaboteurEnvironment(GameEnvironment):
         return {
             'game-board-sensor': game_board,
             'turn-taking-indicator': self._player_turn,
+            'deck-sensor': self._deck,
+            'revealed-sensor': self._revealed_goal_cards,
+            'player-sensor': player,
+            'player-type-sensor': player['player-type'],
             'hand-sensor': player['hand'],
-            'sabotage-sensor': player['sabotaged'],
+            'sabotaged-sensor': player['sabotaged'],
             'seen-sensor': player['seen'],
-            'special-card-sensor': self._revealed_goal_cards
         }
 
     @staticmethod
@@ -199,7 +202,10 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Saboteurs Win - No cards remaining which is equal to no actions remaining
         empty_deck = deck.cards_remaining() <= 0
-        empty_player_hands = all(len(players[player]['hand']) <= 0 for player in players)
+        empty_player_hands = all(
+            player is None or (players[player] is not None and len(players[player]['hand']) <= 0)
+            for player in players
+        )
 
         if empty_deck and empty_player_hands:
             return 'saboteur'
@@ -319,7 +325,7 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Remove and draw card
         if card is None:
-            raise InvalidMoveException("Not card found on player.")
+            raise InvalidMoveException("No card found on player.")
         hand.remove(card)
         if deck.cards_remaining() > 0:
             hand.append(deck.draw())
@@ -363,23 +369,23 @@ class SaboteurEnvironment(GameEnvironment):
 
         # Place card
         if action == 'path' or action == 'turn':
-            action_str = f'{action}-{position[0]}-{position[0]}-{card_type}'
+            action_str = f'{action}-{position[0]}-{position[1]}-{card_type}'
         elif action == 'mend':
             action_str = f'{action}'
         elif action == 'dynamite' or action == 'map':
-            action_str = f'{action}-{position[0]}-{position[0]}'
+            action_str = f'{action}-{position[0]}-{position[1]}'
         elif action == 'sabotage':
             action_str = f'{action}-{opponent}'
         elif action == 'pass':
             if card_type is None:
                 action_str = f'{action}-{card_type}'
             else:
-                action_str = f'{action}-path-{card_type}'
+                action_str = f'{action}-{card_type}'
 
         if action is None or action_str is None:
             raise InvalidActionException("Invalid agent actuator action.")
 
-        new_state = SaboteurEnvironment.transition_result(self.get_game_state(), action)
+        new_state = SaboteurEnvironment.transition_result(self.get_game_state(), action_str)
 
         new_game_board = new_state['game-board']
 

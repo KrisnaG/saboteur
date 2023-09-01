@@ -9,7 +9,7 @@ import shutil
 from game.saboteur_game import SaboteurGame
 from environment.saboteur_environment import SaboteurEnvironment
 from player.saboteur_player import SaboteurPlayer
-from program.agent_program import intelligent_agent
+from program.agent_program import intelligent_agent, random_behaviour
 from component.game_board import GameBoard
 from component.deck import Deck
 import constant.game_constants as gc
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     
     # Create SaboteurPlayer instances for each player
     for player_number in range(gc.NUMBER_OF_PLAYERS):
-        game_environment.add_player(SaboteurPlayer(f'P{player_number}', intelligent_agent))
+        game_environment.add_player(SaboteurPlayer(f'P{player_number}', random_behaviour))
 
     game = SaboteurGame(game_environment)
 
