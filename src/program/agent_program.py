@@ -40,9 +40,13 @@ def random_behaviour(percepts, actuators):
         try:
             action = random.choice(legal_moves)
         except IndexError:
-            print("You may have forgotten to implement the ConnectFourEnvironment methods, or you implemented them incorrectly:")
+            print("You may have forgotten to implement the ConnectFourEnvironment methods, or you implemented them "
+                  "incorrectly:")
             traceback.print_exc()
             return []
+
+        if action.split('-')[0] == 'pass':
+            action = random.choice(legal_moves)
 
         return [action]
     else:

@@ -5,9 +5,10 @@
 from une_ai.models import Agent, GridMap
 
 import src.constant.game_constants as gc
+from src.component.card.card import Card
+from src.component.card.path_card import PATH_CARD_TYPES
 from src.component.deck import Deck
 from src.component.game_board import GameBoard
-from src.component.card import Card, PATH_CARD_TYPES
 
 
 class SaboteurPlayer(Agent):
@@ -18,8 +19,10 @@ class SaboteurPlayer(Agent):
     def add_all_sensors(self):
         """
         Adds all the required sensors.
-        Sensors: Game Board, Hand, Sabotage, Turn, Revealed Special Cards and Seen
+        Sensors: Game Board, Turn, Deck, Revealed Special Cards, Player, Type, Hand, Sabotage, and Seen.
         """
+        # Game specific sensors
+
         # Game Board sensor
         self.add_sensor(
             sensor_name='game-board-sensor',
@@ -55,6 +58,8 @@ class SaboteurPlayer(Agent):
                 isinstance(cards, list) and
                 all(isinstance(card, (Card, type(None))) for card in cards)
         )
+
+        # Player specific sensors
 
         # Player sensor
         self.add_sensor(

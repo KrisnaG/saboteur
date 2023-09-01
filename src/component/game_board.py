@@ -7,7 +7,7 @@ from une_ai.models import GridMap
 import random
 
 import src.constant.game_constants as gc
-from src.component.card import PathCard
+from src.component.card.path_card import PathCard
 
 
 class GameBoard:
@@ -80,7 +80,45 @@ class GameBoard:
         """
         return (GameBoard.is_on_board(x, y) and
                 board.get_item_value(x, y) is None and
+                GameBoard.aligns_with_neighbours((x, y), path_card, board) and
                 GameBoard.can_reach_target((x, y), path_card, gc.START_POSITION, board))
+
+    @staticmethod
+    def aligns_with_neighbours(location, card, board):
+        """
+        Static function. Check if a card can be placed and aligns with neighbouring cards.\n
+        Args:
+            location (tuple[int, int]): The location of the card (x, y).
+            card (PathCard): The path card to be placed.
+            board (GridMap): The game board.
+        Returns:
+            bool: True if the card can be placed, False otherwise.
+        """
+        x = location[0]
+        y = location[1]
+
+        neighbours = {
+            'north': (x - 1, y),
+            'south': (x + 1, y),
+            'west': (x, y - 1),
+            'east': (x, y + 1)
+        }
+
+        card_tunnels = card.get_tunnels()
+
+        for direction, location in neighbours.items():
+            nx, ny = location
+            if (GameBoard.is_on_board(nx, ny) and
+                    board.get_item_value(nx, ny) is not None):
+                neighbour_card_tunnels = board.get_item_value(nx, ny).get_tunnels()
+                if not ((any(direction in tunnel for tunnel in card_tunnels) and
+                         any(GameBoard.opposite_direction(direction) in tunnel for tunnel in neighbour_card_tunnels)) or
+                        (not any(direction in tunnel for tunnel in card_tunnels) and
+                         not any(
+                             GameBoard.opposite_direction(direction) in tunnel for tunnel in neighbour_card_tunnels))):
+                    return False
+
+        return True
 
     @staticmethod
     def can_reach_target(start_location, start_card, target_location, incoming_board):

@@ -3,26 +3,8 @@
     Author: Krisna Gusti (kgusti@myune.edu.au)
 """
 
-
-class Card:
-    pass
-
-
-class ActionCard(Card):
-
-    def __init__(self, action):
-        assert action in ['map', 'sabotage', 'mend',
-                          'dynamite'], "The parameter action must be either map, sabotage, mend or dynamite"
-
-        self._action = action
-
-    def get_action(self):
-        return self._action
-
-
-class InvalidTunnel(Exception):
-    pass
-
+from src.component.card.card import Card
+from src.exception.invalid_tunnel import InvalidTunnel
 
 # Type of Path cards
 PATH_CARD_TYPES = [
@@ -48,6 +30,13 @@ PATH_CARD_TYPES = [
 class PathCard(Card):
 
     def __init__(self, tunnels, path_type, special_card=None):
+        """
+        Initialise a PathCard instance.\n
+        Args:
+            tunnels (list): A list of tunnel tuples specifying the card's tunnels.
+            path_type (str): The type of path card.
+            special_card (str): The special type of card (None, 'start', 'goal', 'gold').
+        """
         assert isinstance(tunnels, list), "The parameter tunnels must be a list of tuples"
         assert special_card in ['start', 'goal', 'gold',
                                 None], "The parameter special_card must be either None, start, goal or gold"
@@ -74,6 +63,13 @@ class PathCard(Card):
 
     @staticmethod
     def cross_road(special_card=None):
+        """
+        Create a cross road PathCard.\n
+        Args:
+            special_card (str): The special type of card (None, 'start', 'goal', 'gold').
+        Returns:
+            PathCard: A cross road PathCard instance.
+        """
         return PathCard(
             [
                 ('north', 'south'),
@@ -89,6 +85,9 @@ class PathCard(Card):
 
     @staticmethod
     def vertical_tunnel():
+        """
+        Create a vertical tunnel PathCard.\n
+        """
         return PathCard(
             [
                 ('north', 'south')
@@ -98,6 +97,9 @@ class PathCard(Card):
 
     @staticmethod
     def horizontal_tunnel():
+        """
+        Create a horizontal tunnel PathCard.\n
+        """
         return PathCard(
             [
                 ('east', 'west')
@@ -107,6 +109,9 @@ class PathCard(Card):
 
     @staticmethod
     def vertical_junction():
+        """
+        Create a vertical junction PathCard.\n
+        """
         return PathCard(
             [
                 ('north', 'south'),
@@ -118,6 +123,9 @@ class PathCard(Card):
 
     @staticmethod
     def horizontal_junction():
+        """
+        Create a horizontal junction PathCard.\n
+        """
         return PathCard(
             [
                 ('east', 'north'),
@@ -129,6 +137,9 @@ class PathCard(Card):
 
     @staticmethod
     def turn():
+        """
+        Create a turn PathCard.\n
+        """
         return PathCard(
             [
                 ('south', 'east')
@@ -138,6 +149,9 @@ class PathCard(Card):
 
     @staticmethod
     def reversed_turn():
+        """
+        Create a reversed turn PathCard.\n
+        """
         return PathCard(
             [
                 ('south', 'west')
@@ -147,6 +161,13 @@ class PathCard(Card):
 
     @staticmethod
     def dead_end(directions):
+        """
+        Create a dead-end PathCard with specified blocked directions.\n
+        Args:
+            directions (list): A list of directions to be blocked in the dead-end.
+        Returns:
+            PathCard: A dead-end PathCard instance with blocked directions.
+        """
         tunnels = []
         for direction in directions:
             tunnels.append((direction, None))
@@ -154,14 +175,32 @@ class PathCard(Card):
         return PathCard(tunnels, path_type=path_type)
 
     def get_path_type(self):
+        """
+        Get the type of the PathCard.\n
+        Returns:
+            str: The type of the PathCard.
+        """
         return self._path_type
 
     def get_image_type(self):
+        """
+         Get the image type of the PathCard.\n
+         Returns:
+             str: The image type of the PathCard.
+         """
         if self.is_special_card() and not self.is_revealed():
             return 'hidden'
         return self.get_path_type()
 
-    def _is_valid_tunnel(self, tunnel):
+    @staticmethod
+    def _is_valid_tunnel(tunnel):
+        """
+        Check if a given tunnel is a valid configuration for the card.\n
+        Args:
+            tunnel (tuple): A tuple representing the card's tunnel configuration.
+        Returns:
+            bool: True if the tunnel is valid, False otherwise.
+        """
         if not isinstance(tunnel, tuple):
             return False
         if len(tunnel) != 2:
@@ -179,18 +218,39 @@ class PathCard(Card):
         return True
 
     def is_special_card(self):
+        """
+        Check if the card is a special card (start, goal, gold).\n
+        Returns:
+            bool: True if the card is special, False otherwise.
+        """
         return self._special_card is not None
 
     def is_gold(self):
+        """
+        Check if the card is a gold card.\n
+        Returns:
+            bool: True if the card is a gold card, False otherwise.
+        """
         return self._special_card == 'gold'
 
     def is_revealed(self):
+        """
+        Check if the card is revealed (visible).\n
+        Returns:
+            bool: True if the card is revealed, False otherwise.
+        """
         return self._revealed
 
     def reveal_card(self):
+        """
+        Mark the card as revealed (visible).
+        """
         self._revealed = True
 
     def turn_card(self):
+        """
+        Rotate the card 180 degrees, changing its tunnel configuration.
+        """
         tunnels = []
         opposite = {
             'north': 'south',
@@ -209,7 +269,17 @@ class PathCard(Card):
         self._is_turned = not self._is_turned
 
     def is_card_turned(self):
+        """
+        Check if the card is turned (rotated 180 degrees).\n
+        Returns:
+            bool: True if the card is turned, False otherwise.
+        """
         return self._is_turned
 
     def get_tunnels(self):
+        """
+        Get a copy of the card's tunnel configuration.
+        Returns:
+            list: A list of tuples representing the card's tunnel configuration.
+        """
         return self._tunnels.copy()

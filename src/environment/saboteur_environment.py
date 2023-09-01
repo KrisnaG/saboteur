@@ -5,7 +5,8 @@
 from une_ai.models import GameEnvironment
 
 import src.constant.game_constants as gc
-from src.component.card import ActionCard, PathCard
+from src.component.card.action_card import ActionCard
+from src.component.card.path_card import PathCard
 from src.component.game_board import GameBoard
 from src.exception.invalid_action_exception import InvalidActionException
 from src.exception.invalid_move_exception import InvalidMoveException
@@ -163,6 +164,11 @@ class SaboteurEnvironment(GameEnvironment):
         return legal_actions
 
     def get_percepts(self):
+        """
+        Get percepts or information about the game state for the current player.
+        Returns:
+              dict: A dictionary containing various percepts.
+        """
         game_state = self.get_game_state()
         game_board = game_state['game-board']
         player = game_state['players'][self._player_turn]
@@ -242,9 +248,8 @@ class SaboteurEnvironment(GameEnvironment):
         parts = action_str.split('-')
         action = parts[0]
 
-        if len(parts) <= 1:
-            # TODO throw error
-            return game_state
+        if len(parts) <= 1 and action != 'mend':
+            raise InvalidActionException(f"Invalid action: {action_str}.")
 
         # Extract game state
         game_board: GameBoard = game_state['game-board']

@@ -8,14 +8,21 @@ import src.constant.game_constants as gc
 
 class SaboteurGame:
     def __init__(self, environment):
+        """
+        Initialize the SaboteurGame instance.\n
+        Args:
+            environment (SaboteurEnvironment): The game environment for this game instance.
+        """
         self._agents = {}
         self._deck = environment.get_deck()
 
+        # Check the type of the environment
         assert type(
             environment).__name__ == 'SaboteurEnvironment', ("environment must be an instance of a subclass of the "
                                                              "class SaboteurEnvironment")
         self._environment = environment
 
+        # Initialise player hands and agents
         for index, player in environment.get_players().items():
             assert type(player['player']).__name__ == 'SaboteurPlayer', \
                 f"Player: {player} must be an instance of the class SaboteurPlayer"
@@ -23,6 +30,7 @@ class SaboteurGame:
                 player['hand'].append(self._deck.draw())
             self._agents[index] = player
 
+        # Get game board dimensions
         game_state = self._environment.get_game_state()
         game_board = game_state['game-board']
         self._n_cols = game_board.get_width()
@@ -42,9 +50,15 @@ class SaboteurGame:
         self.main()
 
     def _reset_bg(self):
+        """
+        Reset the background of the game display to black.
+        """
         self._display.fill(gc.BLACK)
 
     def _play_step(self):
+        """
+        Execute a single step of the game, which includes sensing, thinking, and acting for the current player.
+        """
         game_state = self._environment.get_game_state()
 
         # Game over
@@ -55,20 +69,21 @@ class SaboteurGame:
 
         # SENSE
         self._agents[current_player]['player'].sense(self._environment)
-
         # THINK
         actions = self._agents[current_player]['player'].think()
-
         if len(actions) != 0:
             self._last_action = f"{current_player}: {actions[0]}"
-
         # ACT
         self._agents[current_player]['player'].act(actions, self._environment)
 
     def _draw_board(self):
+        """
+        Draw the game board, including the cards and their images, on the Pygame display.
+        """
         game_state = self._environment.get_game_state()
         game_board = game_state['game-board']
 
+        # Iterate over rows and columns to draw each card
         for row in range(self._n_cols):
             for col in range(self._n_rows):
                 card = game_board.get_board().get_item_value(row, col)
@@ -78,12 +93,14 @@ class SaboteurGame:
                 # Draw a card rectangle
                 pygame.draw.rect(self._display, gc.BROWN, (x_coord, y_coord, gc.CARD_WIDTH, gc.CARD_HEIGHT), 1)
 
+                # Load and display the card's image
                 if card is not None:
                     card_type = card.get_image_type()
                     image_path = f"resource/card/{card_type}.png"
                     try:
                         card_image = pygame.image.load(image_path)
                         card_image = pygame.transform.scale(card_image, (gc.CARD_WIDTH, gc.CARD_HEIGHT))
+                        # Rotate the card image 180 degrees if the card is turned
                         if card.is_card_turned():
                             card_image = pygame.transform.rotate(card_image, 180)
 
@@ -91,9 +108,14 @@ class SaboteurGame:
                     except pygame.error:
                         print(f"Image not found: {image_path}")
 
-        pygame.display.update()
-
     def _draw_text(self, text_message, padding_top, orientation):
+        """
+        Draw a text message on the Pygame display.\n
+        Args:
+            text_message (str): The text message to be displayed.
+            padding_top (int): The padding from the top of the display.
+            orientation (str): The orientation of the text message ('center', 'left', 'right', or 'default').
+        """
         font = pygame.font.SysFont(gc.FONT, gc.FONT_SIZE)
         text_size = font.size(text_message)
         text = font.render(text_message, True, gc.FONT_COLOUR)
@@ -112,7 +134,10 @@ class SaboteurGame:
         pass
 
     def _draw_frame(self):
-        self._display.fill(gc.BLACK)
+        """
+        Draw a single frame of the game.
+        """
+        self._reset_bg()
         self._draw_board()
         self._draw_text(f"Last action: {self._last_action}", 20, 'left')
         if type(self._environment).is_terminal(self._environment.get_game_state()):
@@ -122,6 +147,9 @@ class SaboteurGame:
             self._draw_text(f"Player Turn: {player}", 90, 'left')
 
     def main(self):
+        """
+        Main game loop for running the Saboteur game.
+        """
         running = True
 
         while running:
@@ -138,4 +166,3 @@ class SaboteurGame:
 
             # sense - think - act
             self._play_step()
-            pygame.time.delay(2000)
