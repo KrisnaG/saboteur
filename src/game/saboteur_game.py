@@ -108,17 +108,18 @@ class SaboteurGame:
                     except pygame.error:
                         print(f"Image not found: {image_path}")
 
-    def _draw_text(self, text_message, padding_top, orientation):
+    def _draw_text(self, text_message, padding_top, orientation, colour=gc.FONT_COLOUR):
         """
         Draw a text message on the Pygame display.\n
         Args:
             text_message (str): The text message to be displayed.
             padding_top (int): The padding from the top of the display.
             orientation (str): The orientation of the text message ('center', 'left', 'right', or 'default').
+            colour (str): The colour for the text.
         """
         font = pygame.font.SysFont(gc.FONT, gc.FONT_SIZE)
         text_size = font.size(text_message)
-        text = font.render(text_message, True, gc.FONT_COLOUR)
+        text = font.render(text_message, True, colour)
         top = (gc.CARD_HEIGHT * gc.BOARD_ROW_SIZE) + padding_top
         if orientation == 'center':
             left = int((gc.DISPLAY_HEIGHT - text_size[0]) / 2) + 200
@@ -135,7 +136,7 @@ class SaboteurGame:
         Draw a text message for the winner on the Pygame display.
         """
         winner = type(self._environment).get_winner(self._environment.get_game_state())
-        self._draw_text(f"WINNERS: {winner}!", gc.FIRST_LINE, 'left')
+        self._draw_text(f"WINNERS: {winner}!", gc.FIRST_LINE, 'left', gc.BLUE)
 
     def _draw_saboteurs(self):
         """
@@ -167,6 +168,13 @@ class SaboteurGame:
                 self._draw_text(f"{key}: {cards}", line_position, 'right')
                 line_position += gc.SPACING
 
+    def _draw_sabotaged_players(self):
+        """
+        Draw a text messages for all sabotaged players.
+        """
+        sabotaged_players = ', '.join([player for player in self._environment.get_players()['P0']['sabotaged']])
+        self._draw_text(f"Sabotaged Players: {sabotaged_players}", gc.SIXTH_LINE, 'left')
+
     def _draw_frame(self):
         """
         Draw a single frame of the game.
@@ -174,6 +182,7 @@ class SaboteurGame:
         self._reset_bg()
         self._draw_board()
         self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
+        self._draw_sabotaged_players()
         if type(self._environment).is_terminal(self._environment.get_game_state()):
             self._draw_game_over()
         else:

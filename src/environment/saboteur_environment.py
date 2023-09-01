@@ -23,6 +23,7 @@ class SaboteurEnvironment(GameEnvironment):
         self._chosen_saboteurs = random.sample(list(range(gc.NUMBER_OF_PLAYERS)), self._number_of_saboteur)
         self._deck = deck
         self._revealed_goal_cards = []
+        self._sabotaged = []
 
     def _change_player(self):
         """
@@ -60,13 +61,13 @@ class SaboteurEnvironment(GameEnvironment):
         if player_number in self._chosen_saboteurs:
             player_type = "saboteur"
 
-        hand, sabotaged, seen = [], [], []
+        hand, seen = [], []
 
         self._players[f'P{player_number}'] = {
             'player': player,
             'player-type': player_type,
             'hand': hand,
-            'sabotaged': sabotaged,
+            'sabotaged': self._sabotaged,
             'seen': seen
         }
 
@@ -110,15 +111,7 @@ class SaboteurEnvironment(GameEnvironment):
         action_cards = [card for card in hand if isinstance(card, ActionCard)]
 
         # Cannot play path cards if sabotaged
-        if len(sabotaged) > 0:
-            mend_actions = []
-            for card in action_cards:
-                if card.get_action() == 'mend':
-                    mend_actions.append('mend')
-                    if len(mend_actions) >= len(sabotaged):
-                        break
-            legal_actions = legal_actions + mend_actions
-        else:
+        if player not in sabotaged:
             # Path cards
             for y, row in enumerate(game_board.get_board_map()):
                 for x, cell in enumerate(row):
@@ -133,14 +126,21 @@ class SaboteurEnvironment(GameEnvironment):
                             turned_card.turn_card()
                             if GameBoard.can_place_card(x, y, turned_card, game_board.get_board()):
                                 legal_actions.append(f'turn-{x}-{y}-{path_card.get_path_type()}')
-
         # Sabotage
         for card in action_cards:
             action = card.get_action()
             if action == 'sabotage':
                 for opponent in players:
-                    if opponent != turn:
+                    if opponent != turn and opponent not in sabotaged:
                         legal_actions.append(f'sabotage-{opponent}')
+                break
+
+        # Mend
+        for card in action_cards:
+            if card.get_action() == 'mend':
+                for player in sabotaged:
+                    legal_actions.append(f'mend-{player}')
+                break
 
         # Map and dynamite
         for y, row in enumerate(game_board.get_board_map()):
@@ -248,7 +248,7 @@ class SaboteurEnvironment(GameEnvironment):
         parts = action_str.split('-')
         action = parts[0]
 
-        if len(parts) <= 1 and action != 'mend':
+        if len(parts) <= 1:
             raise InvalidActionException(f"Invalid action: {action_str}.")
 
         # Extract game state
@@ -289,13 +289,13 @@ class SaboteurEnvironment(GameEnvironment):
             # Sabotage
             if action == 'sabotage':
                 target = parts[1]
-                opponent = players[target]
-                opponent['sabotaged'].append('sabotaged')
+                player['sabotaged'].append(target)
             elif action == 'mend':
-                if len(player['sabotaged']) > 0:
-                    player['sabotaged'].pop()
+                target = parts[1]
+                if target in player['sabotaged']:
+                    player['sabotaged'].remove(target)
                 else:
-                    raise InvalidMoveException(f"Player: {player} has not been sabotaged.")
+                    raise InvalidMoveException(f"Player: {target} has not been sabotaged.")
             # Dynamite
             elif action == 'dynamite':
                 x = int(parts[1])
@@ -361,26 +361,26 @@ class SaboteurEnvironment(GameEnvironment):
         if 'play-card' not in agent_actuators.keys():
             return
 
-        action, position_opponent, card_type = agent_actuators['play-card']
+        action, position_player, card_type = agent_actuators['play-card']
 
         position = None
-        opponent = None
+        player = None
         action_str = None
 
-        if isinstance(position_opponent, tuple):
-            position = position_opponent
+        if isinstance(position_player, tuple):
+            position = position_player
         else:
-            opponent = position_opponent
+            player = position_player
 
         # Place card
         if action == 'path' or action == 'turn':
             action_str = f'{action}-{position[0]}-{position[1]}-{card_type}'
         elif action == 'mend':
-            action_str = f'{action}'
+            action_str = f'{action}-{player}'
         elif action == 'dynamite' or action == 'map':
             action_str = f'{action}-{position[0]}-{position[1]}'
         elif action == 'sabotage':
-            action_str = f'{action}-{opponent}'
+            action_str = f'{action}-{player}'
         elif action == 'pass':
             if card_type is None:
                 action_str = f'{action}-{card_type}'

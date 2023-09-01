@@ -127,12 +127,6 @@ class SaboteurPlayer(Agent):
         Adds all the required actions.
         Actions: Mend, Path, Turn, Dynamite, Map, Sabotage and Pass
         """
-        # Mend
-        self.add_action(
-            action_name='mend',
-            action_function=lambda: {'play-card': ('mend', None, None)}
-        )
-
         for row in range(gc.BOARD_ROW_SIZE):
             for col in range(gc.BOARD_COL_SIZE):
                 if (row, col) != gc.START_POSITION:
@@ -164,10 +158,15 @@ class SaboteurPlayer(Agent):
 
         # Sabotage
         for index in range(gc.NUMBER_OF_PLAYERS):
-            opponent = f'P{index}'
+            player = f'P{index}'
             self.add_action(
-                action_name=f'sabotage-{opponent}',
-                action_function=lambda opp=opponent: {'play-card': ('sabotage', opp, None)}
+                action_name=f'sabotage-{player}',
+                action_function=lambda p=player: {'play-card': ('sabotage', p, None)}
+            )
+            # Mend
+            self.add_action(
+                action_name=f'mend-{player}',
+                action_function=lambda p=player: {'play-card': ('mend', p, None)}
             )
 
         # Pass
