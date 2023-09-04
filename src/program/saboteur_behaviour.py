@@ -14,7 +14,7 @@ import random
 from src.environment.saboteur_environment import SaboteurEnvironment
 
 
-def saboteur_behaviour(game_state):
+def saboteur_behaviour(game_state, kb):
     action = []
     legal_actions = SaboteurEnvironment.get_legal_actions(game_state)
     action.append(random.choice(legal_actions))
