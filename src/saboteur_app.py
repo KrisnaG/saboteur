@@ -40,7 +40,7 @@ if __name__ == '__main__':
     
     # Create SaboteurPlayer instances for each player
     for player_number in range(gc.NUMBER_OF_PLAYERS):
-        game_environment.add_player(SaboteurPlayer(f'P{player_number}', random_behaviour))
+        game_environment.add_player(SaboteurPlayer(f'P{player_number}', intelligent_agent))
 
     game = SaboteurGame(game_environment)
 

@@ -57,9 +57,24 @@ class PathCard(Card):
             if special_card in ['goal', 'gold']:
                 self._revealed = False
             if special_card == 'gold':
-                self._path_type = 'gold'
+                self._path_type = special_card
+            if special_card == 'start':
+                self._path_type = special_card
         else:
             self._tunnels = tunnels
+
+    def copy(self):
+        """
+        Create a copy of the PathCard object.
+        """
+        copied_path_card = PathCard(
+            self.get_tunnels(),
+            self._path_type,
+            self._special_card
+        )
+        copied_path_card._revealed = self._revealed
+        copied_path_card._is_turned = self._is_turned
+        return copied_path_card
 
     @staticmethod
     def cross_road(special_card=None):

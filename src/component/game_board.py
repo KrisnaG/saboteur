@@ -36,6 +36,15 @@ class GameBoard:
         for i, goal in enumerate(goal_cards):
             self._board.set_item_value(gc.GOAL_POSITIONS[i][0], gc.GOAL_POSITIONS[i][1], goal)
 
+    def copy(self):
+        """
+        Create a copy of the GameBoard object.
+        """
+        new_game_board = GameBoard()
+        new_board = self._board.copy()
+        new_game_board._board = new_board
+        return new_game_board
+
     @staticmethod
     def is_on_board(x, y):
         """
@@ -46,7 +55,7 @@ class GameBoard:
         Returns:
             bool: True if the coordinates are within the board bounds, False otherwise.
         """
-        return x >= 0 and x < gc.BOARD_ROW_SIZE and y >= 0 and y < gc.BOARD_COL_SIZE
+        return 0 <= x < gc.BOARD_ROW_SIZE and 0 <= y < gc.BOARD_COL_SIZE
 
     @staticmethod
     def opposite_direction(direction):
@@ -253,7 +262,7 @@ class GameBoard:
         """
         assert 0 <= x < 20, "The x coordinate must be 0 <= x < 20"
         assert 0 <= y < 20, "The y coordinate must be 0 <= y < 20"
-        assert self._board.get_item_value(x, y) is not None and not self._board.get_item_value(x, y).is_special_card(), \
+        assert self._board.get_item_value(x, y) is not None and not self._board.get_item_value(x, y).is_special_card(),\
             ("There is no valid card to remove at coordinates ({0}, {1})".format(x, y))
 
         self._board.set_item_value(x, y, None)

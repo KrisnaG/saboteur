@@ -9,7 +9,13 @@ doing so when other gold-diggers have no reason to doubt the player's intentions
 from gold-diggers. They may decide to block paths or destroy path cards using the dynamite card strategically.
 However, doing so may raise suspicions among gold-diggers, possibly identifying the player as a saboteur.
 """
+import random
+
+from src.environment.saboteur_environment import SaboteurEnvironment
 
 
 def saboteur_behaviour(game_state):
-    return []
+    action = []
+    legal_actions = SaboteurEnvironment.get_legal_actions(game_state)
+    action.append(random.choice(legal_actions))
+    return action

@@ -73,7 +73,8 @@ def intelligent_agent(percepts, actuators):
         'player-turn': player_turn,
         'players': players,
         'deck': percepts['deck-sensor'],
-        'revealed': percepts['revealed-sensor']
+        'revealed': percepts['revealed-sensor'],
+        'players-actions': percepts['players-actions-sensor']
     }
 
     if player['player-type'] == 'saboteur':

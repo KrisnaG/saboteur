@@ -24,6 +24,7 @@ class SaboteurEnvironment(GameEnvironment):
         self._deck = deck
         self._revealed_goal_cards = []
         self._sabotaged = []
+        self._players_actions = {f'P{i}': [] for i in range(gc.NUMBER_OF_PLAYERS)}
 
     def _change_player(self):
         """
@@ -84,7 +85,8 @@ class SaboteurEnvironment(GameEnvironment):
             'player-turn': self._player_turn,
             'players': self._players,
             'deck': self._deck,
-            'revealed': self._revealed_goal_cards
+            'revealed': self._revealed_goal_cards,
+            'players-actions': self._players_actions
         }
 
         return game_state
@@ -122,7 +124,7 @@ class SaboteurEnvironment(GameEnvironment):
                                 legal_actions.append(f'path-{x}-{y}-{path_card.get_path_type()}')
 
                             # Turn card and check placements
-                            turned_card = PathCard(path_card.get_tunnels(), path_card.get_path_type())
+                            turned_card = path_card.copy()
                             turned_card.turn_card()
                             if GameBoard.can_place_card(x, y, turned_card, game_board.get_board()):
                                 legal_actions.append(f'turn-{x}-{y}-{path_card.get_path_type()}')
@@ -178,10 +180,11 @@ class SaboteurEnvironment(GameEnvironment):
             'turn-taking-indicator': self._player_turn,
             'deck-sensor': self._deck,
             'revealed-sensor': self._revealed_goal_cards,
+            'players-actions-sensor': self._players_actions,
             'player-sensor': player,
             'player-type-sensor': player['player-type'],
             'hand-sensor': player['hand'],
-            'sabotaged-sensor': player['sabotaged'],
+            'sabotaged-sensor': self._sabotaged,
             'seen-sensor': player['seen'],
         }
 
@@ -252,11 +255,12 @@ class SaboteurEnvironment(GameEnvironment):
             raise InvalidActionException(f"Invalid action: {action_str}.")
 
         # Extract game state
-        game_board: GameBoard = game_state['game-board']
+        game_board: GameBoard = game_state['game-board'].copy()
         player_turn = game_state['player-turn']
         players = game_state['players']
         deck = game_state['deck']
         revealed_goal_cards = game_state['revealed']
+        player_actions = game_state['players-actions']
 
         # Extract player info
         player = players[player_turn]
@@ -264,6 +268,7 @@ class SaboteurEnvironment(GameEnvironment):
         path_cards = [card for card in hand if isinstance(card, PathCard)]
         action_cards = [card for card in hand if isinstance(card, ActionCard)]
         card = None
+        copied_card = None
 
         # Path
         if action == 'path' or action == 'turn':
@@ -273,12 +278,13 @@ class SaboteurEnvironment(GameEnvironment):
             for path_card in path_cards:
                 if path_card.get_path_type() == path_type:
                     card = path_card
+                    copied_card = card.copy()
                     break
             # Turn card
             if action == 'turn':
-                card.turn_card()
-            if GameBoard.can_place_card(x, y, card, game_board.get_board()):
-                game_board.add_path_card(x, y, card)
+                copied_card.turn_card()
+            if GameBoard.can_place_card(x, y, copied_card, game_board.get_board()):
+                game_board.add_path_card(x, y, copied_card)
             else:
                 raise InvalidMoveException(f"Cannot place path card at {x} {y}")
         else:
@@ -328,13 +334,6 @@ class SaboteurEnvironment(GameEnvironment):
             else:
                 raise InvalidMoveException(f"Action type: {action} not found")
 
-        # Remove and draw card
-        if card is None:
-            raise InvalidMoveException("No card found on player.")
-        hand.remove(card)
-        if deck.cards_remaining() > 0:
-            hand.append(deck.draw())
-
         # Next player
         current_number = int(player_turn[1:])
         next_number = (current_number + 1) % gc.NUMBER_OF_PLAYERS
@@ -346,10 +345,11 @@ class SaboteurEnvironment(GameEnvironment):
             'player-turn': next_player_turn,
             'players': players,
             'deck': deck,
-            'revealed': revealed_goal_cards
+            'revealed': revealed_goal_cards,
+            'players-actions': player_actions
         }
 
-        return new_game_state
+        return new_game_state, (card, player_turn)
 
     def state_transition(self, agent_actuators):
         """
@@ -390,7 +390,21 @@ class SaboteurEnvironment(GameEnvironment):
         if action is None or action_str is None:
             raise InvalidActionException("Invalid agent actuator action.")
 
-        new_state = SaboteurEnvironment.transition_result(self.get_game_state(), action_str)
+        new_state, play = SaboteurEnvironment.transition_result(self.get_game_state(), action_str)
+
+        card, player_turn = play
+        player = new_state['players'][player_turn]
+        hand = player['hand']
+        deck = new_state['deck']
+
+        self._players_actions[player_turn].append(action_str)
+
+        # Remove and draw card
+        if card is None:
+            raise InvalidMoveException("No card found on player.")
+        hand.remove(card)
+        if deck.cards_remaining() > 0:
+            hand.append(deck.draw())
 
         new_game_board = new_state['game-board']
 
