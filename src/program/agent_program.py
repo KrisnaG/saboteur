@@ -2,6 +2,7 @@
 Author:
     Krisna Gusti (kgusti@myune.edu.au)
 """
+
 import random
 import traceback
 
@@ -16,9 +17,17 @@ from src.program.gold_miner_behaviour import gold_miner_behaviour
 from src.program.saboteur_behaviour import saboteur_behaviour
 
 
-# A simple agent program choosing actions randomly
 def random_behaviour(percepts, actuators):
+    """
+    A basic agent program that selects actions randomly from the legal moves available to the player.\n
+    Args:
+        percepts (dict): A dictionary containing sensor data including player information and game state.
+        actuators (dict): A dictionary containing actuator data.
+    Returns:
+        list: A list of actions to be taken by the agent.
+    """
     try:
+        # Extract player information
         player = {
             'player': percepts['player-sensor'],
             'player-type': percepts['player-type-sensor'],
@@ -26,10 +35,15 @@ def random_behaviour(percepts, actuators):
             'sabotaged': percepts['sabotaged-sensor'],
             'seen': percepts['seen-sensor']
         }
+
+        # Initialise a dictionary to represent all players in the game
         players = {f'P{i}': None for i in range(gc.NUMBER_OF_PLAYERS)}
+
+        # Set the current player's data in the players dictionary
         player_turn = percepts['turn-taking-indicator']
         players[player_turn] = player
 
+        # Create a game state dictionary with player and game information
         game_state = {
             'game-board': percepts['game-board-sensor'],
             'player-turn': player_turn,
@@ -39,12 +53,15 @@ def random_behaviour(percepts, actuators):
         }
 
     except KeyError:
+        # Handle exceptions related to missing sensors
         game_state = {}
         print("You may have forgotten to add the necessary sensors:")
         traceback.print_exc()
+
     if not SaboteurEnvironment.is_terminal(game_state):
         legal_moves = SaboteurEnvironment.get_legal_actions(game_state)
         try:
+            # Randomly select an action from the legal moves
             action = random.choice(legal_moves)
         except IndexError:
             print("You may have forgotten to implement the ConnectFourEnvironment methods, or you implemented them "
@@ -52,15 +69,19 @@ def random_behaviour(percepts, actuators):
             traceback.print_exc()
             return []
 
-        if action.split('-')[0] == 'pass':
-            action = random.choice(legal_moves)
-
         return [action]
     else:
         return []
 
 
 def build_knowledge_base(players_actions):
+    """
+    Build a knowledge base to predict whether each player is a Gold Miner or a Saboteur based on their actions.\n
+    Args:
+        players_actions (dict): A dictionary mapping player names to their lists of actions.
+    Returns:
+        dict: A dictionary mapping player names to their predicted roles ('gold-miner' or 'saboteur').
+    """
     model = DenseHMM()
     states = ['gold-miner', 'saboteur']
 
@@ -83,9 +104,13 @@ def build_knowledge_base(players_actions):
     model.add_edge(state_dists[1], state_dists[0], 0.6)
 
     predicted_states = {}
+
+    # Iterate over each player's actions and build predictions
     for player, actions in players_actions.items():
         if len(actions) > 1:
             observations = []
+
+            # Process each action to extract relevant observations
             for action in actions:
                 if action.find('dead-end') >= 0:
                     observations.append('dead-end')
@@ -94,6 +119,7 @@ def build_knowledge_base(players_actions):
                 else:
                     observations.append(action.split('-')[0])
 
+            # Prepare the observations for prediction
             X = np.array([[[['path', 'dead-end', 'sabotage', 'mend', 'map', 'dynamite', 'pass'].index(label)]
                            for label in observations]])
 
@@ -107,6 +133,15 @@ def build_knowledge_base(players_actions):
 
 
 def intelligent_agent(percepts, actuators):
+    """
+    The intelligent agent function takes percepts and performs actions based on the game state and player type.\n
+    Args:
+        percepts (dict): A dictionary containing sensor data including player information, game state, and actions.
+        actuators (dict): A dictionary containing actuator data.
+    Returns:
+        list: A list of actions to be taken by the agent.
+    """
+    # Extract player information
     player = {
         'player': percepts['player-sensor'],
         'player-type': percepts['player-type-sensor'],
@@ -115,11 +150,15 @@ def intelligent_agent(percepts, actuators):
         'seen': percepts['seen-sensor']
     }
 
+    # Initialise a dictionary to represent all players in the game
     players = {f'P{i}': None for i in range(gc.NUMBER_OF_PLAYERS)}
+
+    # Set the current player's data in the players dictionary
     player_turn = percepts['turn-taking-indicator']
     players[player_turn] = player
-    players_actions = percepts['players-actions-sensor']
 
+    # Extract game state information
+    players_actions = percepts['players-actions-sensor']
     game_state = {
         'game-board': percepts['game-board-sensor'],
         'player-turn': player_turn,
@@ -129,15 +168,17 @@ def intelligent_agent(percepts, actuators):
         'players-actions': players_actions
     }
 
+    # Build the knowledge base based on players' action
     kb = build_knowledge_base(players_actions)
-
     print(f"{player_turn}: {kb}")
 
+    # Choose actions based on the player's type (saboteur or gold miner)
     if player['player-type'] == 'saboteur':
         action = saboteur_behaviour(game_state, kb)
     else:
         action = gold_miner_behaviour(game_state, kb)
 
+    # Handle errors and ensure that an action is returned
     if action is None or len(action) <= 0:
         print("ERROR")
         gold_miner_behaviour(game_state, kb)

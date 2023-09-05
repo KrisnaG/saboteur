@@ -1,5 +1,6 @@
 """
     Author: Krisna Gusti (kgusti@myune.edu.au)
+    Game constants and configurations.
 """
 
 # Players
