@@ -181,8 +181,7 @@ class SaboteurGame:
         """
         self._reset_bg()
         self._draw_board()
-        self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
-        self._draw_sabotaged_players()
+        self._draw_players_cards()
         if type(self._environment).is_terminal(self._environment.get_game_state()):
             self._draw_game_over()
         else:
@@ -190,7 +189,8 @@ class SaboteurGame:
             self._draw_text(f"Player Turn: {player}", gc.FIRST_LINE, 'left')
         self._draw_saboteurs()
         self._draw_gold_miners()
-        self._draw_players_cards()
+        self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
+        self._draw_sabotaged_players()
 
     def main(self):
         """
@@ -212,3 +212,5 @@ class SaboteurGame:
 
             # sense - think - act
             self._play_step()
+
+            pygame.time.delay(500)

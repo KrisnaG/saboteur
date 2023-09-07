@@ -33,8 +33,8 @@ BLUE = (0, 0, 255)
 # Starting positions
 START_POSITION = (6, 10)
 GOAL_POSITIONS = [
-    (14, 8),
     (14, 10),
+    (14, 8),
     (14, 12)
 ]
 

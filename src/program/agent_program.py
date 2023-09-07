@@ -87,21 +87,21 @@ def build_knowledge_base(players_actions):
 
     # Define emission probability distributions for each state
     # 'path', 'dead-end', 'sabotage', 'mend', 'map', 'dynamite', 'pass'
-    gold_miner_emissions = [Categorical([[0.9, 0.001, 0.3, 0.4, 0.3, 0.5, 0.5]])]
-    saboteur_emissions = [Categorical([[0.8, 0.95, 0.8, 0.2, 0.3, 0.7, 0.5]])]
+    gold_miner_emissions = [Categorical([[0.9, 0.0, 0.3, 0.5, 0.6, 0.5, 0.5]])]
+    saboteur_emissions = [Categorical([[0.8, 0.99, 0.6, 0.3, 0.4, 0.6, 0.5]])]
     state_dists = gold_miner_emissions + saboteur_emissions
 
     model.add_distributions(state_dists)
 
-    # Set initial probabilities
+    # Set initial probabilities 0 = gold-miner 1 = saboteur
     model.add_edge(model.start, state_dists[0], 0.625)
     model.add_edge(model.start, state_dists[1], 0.375)
 
-    # Set transition probabilities
+    # Set transition probabilities 0 = gold-miner 1 = saboteur
     model.add_edge(state_dists[0], state_dists[0], 0.8)
     model.add_edge(state_dists[0], state_dists[1], 0.7)
-    model.add_edge(state_dists[1], state_dists[1], 0.4)
-    model.add_edge(state_dists[1], state_dists[0], 0.6)
+    model.add_edge(state_dists[1], state_dists[1], 0.7)
+    model.add_edge(state_dists[1], state_dists[0], 0.5)
 
     predicted_states = {}
 
@@ -170,7 +170,7 @@ def intelligent_agent(percepts, actuators):
 
     # Build the knowledge base based on players' action
     kb = build_knowledge_base(players_actions)
-    print(f"{player_turn}: {kb}")
+    print(f"{player_turn} KB: {kb}")
 
     # Choose actions based on the player's type (saboteur or gold miner)
     if player['player-type'] == 'saboteur':
@@ -180,8 +180,6 @@ def intelligent_agent(percepts, actuators):
 
     # Handle errors and ensure that an action is returned
     if action is None or len(action) <= 0:
-        print("ERROR")
-        gold_miner_behaviour(game_state, kb)
         raise InvalidActionException(f"No action for player {player_turn}")
 
     return action
