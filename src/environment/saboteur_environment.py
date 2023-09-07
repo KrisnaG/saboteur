@@ -414,7 +414,7 @@ class SaboteurEnvironment(GameEnvironment):
             if not card.is_revealed():
                 if GameBoard.can_reach_target(goal, None, gc.START_POSITION, new_game_board.get_board()):
                     card.reveal_card()
-                    self._revealed_goal_cards.append(card)
+                    self._revealed_goal_cards.append((goal[0], goal[1]))
 
         self._game_board = new_game_board
         self._player_turn = new_state['player-turn']

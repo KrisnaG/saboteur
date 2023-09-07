@@ -54,9 +54,9 @@ class SaboteurPlayer(Agent):
         self.add_sensor(
             sensor_name='revealed-sensor',
             initial_value=[],
-            validation_function=lambda cards:
-                isinstance(cards, list) and
-                all(isinstance(card, (Card, type(None))) for card in cards)
+            validation_function=lambda coordinates:
+                isinstance(coordinates, list) and
+                all(isinstance(coordinate, tuple) for coordinate in coordinates)
         )
 
         # Players Actions Sensor

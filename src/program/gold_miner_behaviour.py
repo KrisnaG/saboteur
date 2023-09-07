@@ -87,6 +87,25 @@ def evaluate_state(game_board, aim, action):
     return payoff
 
 
+def infer_gold(seen, revealed):
+    """
+    Infers the possible gold positions from what has been seen and revealed.
+    Args:
+        seen (list): A list of tuples containing positions and a bool indicating if the card at that position is seen.
+        revealed (list): A list of positions where cards have been revealed.
+    Returns:
+        tuple: Goal positions that was inferred to be a gold card.
+    """
+    goal_positions = gc.GOAL_POSITIONS.copy()
+    for item, _ in seen:
+        if item in goal_positions:
+            goal_positions.remove(item)
+    for item in revealed:
+        if item in goal_positions:
+            goal_positions.remove(item)
+    return goal_positions
+
+
 def find_goal_card_aim(seen, revealed):
     """
     Determine the aim or target position for a goal card placement based on the current state of seen and
@@ -108,7 +127,12 @@ def find_goal_card_aim(seen, revealed):
     # Have we seen a gold card?
     gold_seen = [seen_item for seen_item in seen if seen_item[1]]
     if len(gold_seen) > 0:
-        aim = gold_seen[0][0]
+        return gold_seen[0][0]
+
+    # Can we infer were the gold is?
+    inferred = infer_gold(seen, revealed)
+    if len(inferred) == 1:
+        return inferred[0]
 
     return aim
 
@@ -146,12 +170,13 @@ def find_best_path_card_placement(game_state, legal_actions, player, revealed):
     return [action]
 
 
-def map_for_gold(legal_actions, seen):
+def map_for_gold(legal_actions, seen, revealed):
     """
     Find the mapping action to reveal a goal card that has not been explored yet.\n
     Args:
         legal_actions (list): List of legal actions available to the player.
         seen (list): List of seen card positions and their visibility status.
+        revealed (list): List of cards that have been revealed on the board.
     Returns:
         list: A list containing the mapping action to reveal an unexplored goal card.
     """
@@ -160,7 +185,7 @@ def map_for_gold(legal_actions, seen):
 
     # Pick a card that has not been looked at
     for pos in gc.GOAL_POSITIONS:
-        if pos not in [item[0] for item in seen]:
+        if pos not in [item[0] for item in seen] and pos not in revealed:
             aim = pos
             break
 
@@ -302,6 +327,7 @@ def gold_miner_behaviour(game_state, kb):
     """
     turn = game_state['player-turn']
     player = game_state['players'][turn]
+    revealed_cards = game_state['revealed']
     seen = player['seen']
 
     legal_actions = SaboteurEnvironment.get_legal_actions(game_state)
@@ -310,13 +336,14 @@ def gold_miner_behaviour(game_state, kb):
     path_exists = any((("path" in action or "turn" in action) and action.find('dead') < 0 and action.find('pass') < 0)
                       for action in legal_actions)
     if path_exists:
-        return find_best_path_card_placement(game_state, legal_actions, player, game_state['revealed'])
+        return find_best_path_card_placement(game_state, legal_actions, player, revealed_cards)
 
     # Map
     map_exists = any("map" in action and action.find('pass') < 0 for action in legal_actions)
     gold_seen = len([seen_item for seen_item in seen if seen_item[1]]) > 0
-    if map_exists and not gold_seen:
-        return map_for_gold(legal_actions, seen)
+    can_infer_gold = len(infer_gold(seen, revealed_cards)) == 1
+    if map_exists and not gold_seen and not can_infer_gold:
+        return map_for_gold(legal_actions, seen, revealed_cards)
 
     # Mend
     mend_exists = any("mend" in action and action.find('pass') < 0 for action in legal_actions)
