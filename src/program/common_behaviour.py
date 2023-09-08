@@ -1,6 +1,4 @@
 """
-Common Behaviour shared between the Gold Miner and Saboteur.
-
 Author:
     Krisna Gusti (kgusti@myune.edu.au)
 """
@@ -13,6 +11,9 @@ import src.constant.game_constants as gc
 
 
 class CommonBehaviour:
+    """
+    Common Behaviour shared between the Gold Miner and Saboteur.
+    """
     @staticmethod
     def behaviour(game_state, kb):
         pass

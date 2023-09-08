@@ -55,7 +55,8 @@ class SaboteurEnvironment(GameEnvironment):
         Returns:
             The player that was added.
         """
-        assert len(self._players) < gc.NUMBER_OF_PLAYERS, f"It is not possible to add more than {gc.NUMBER_OF_PLAYERS} players for this game."
+        assert len(self._players) < gc.NUMBER_OF_PLAYERS, \
+            f"It is not possible to add more than {gc.NUMBER_OF_PLAYERS} players for this game."
 
         player_number = len(self._players)
         player_type = "gold-miner"

@@ -8,6 +8,10 @@ from src.program.common_behaviour import CommonBehaviour
 
 
 class GoldMinerBehaviour(CommonBehaviour):
+    """
+    Behaviour for a Gold Miner agent.
+    """
+
     @staticmethod
     def find_best_path_card_placement(game_state, legal_actions, player, revealed, kb):
         """

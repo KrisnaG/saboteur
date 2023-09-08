@@ -8,6 +8,10 @@ from src.program.common_behaviour import CommonBehaviour
 
 
 class SaboteurBehaviour(CommonBehaviour):
+    """
+    Behaviour for a Saboteur agent.
+    """
+
     @staticmethod
     def evaluate_bad_state(game_board, aim, action):
         """
