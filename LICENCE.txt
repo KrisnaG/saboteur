@@ -1,0 +1,10 @@
+The card images were created with draw.io:
+Diagrams.net
+https://app.diagrams.net
+
+Images based on the Saboteur (card game)
+https://en.wikipedia.org/wiki/Saboteur_(card_game)
+Illustrators: Andrea Boekhoff, Fréderic Moyersoen
+
+LICENCE
+Creative Commons Attribution-ShareAlike 4.0 International License
