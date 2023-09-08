@@ -175,6 +175,13 @@ class SaboteurGame:
         sabotaged_players = ', '.join([player for player in self._environment.get_players()['P0']['sabotaged']])
         self._draw_text(f"Sabotaged Players: {sabotaged_players}", gc.SIXTH_LINE, 'left')
 
+    def _draw_announcements(self):
+        announcements = ""
+        for player, content in [player for player in self._environment.get_game_state()['announcements'].items()]:
+            content_str = ", ".join(map(str, content))
+            announcements += f"{player}: {content_str} "
+        self._draw_text(f"Announcements: {announcements}", gc.SIXTH_LINE, 'right')
+
     def _draw_frame(self):
         """
         Draw a single frame of the game.
@@ -191,6 +198,7 @@ class SaboteurGame:
         self._draw_gold_miners()
         self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
         self._draw_sabotaged_players()
+        self._draw_announcements()
 
     def main(self):
         """

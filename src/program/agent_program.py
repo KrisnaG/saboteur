@@ -13,8 +13,8 @@ from pomegranate.hmm import DenseHMM
 from src.environment.saboteur_environment import SaboteurEnvironment
 import src.constant.game_constants as gc
 from src.exception.invalid_action_exception import InvalidActionException
-from src.program.gold_miner_behaviour import gold_miner_behaviour
-from src.program.saboteur_behaviour import saboteur_behaviour
+from src.program.gold_miner_behaviour import GoldMinerBehaviour
+from src.program.saboteur_behaviour import SaboteurBehaviour
 
 
 def random_behaviour(percepts, actuators):
@@ -69,16 +69,21 @@ def random_behaviour(percepts, actuators):
             traceback.print_exc()
             return []
 
-        return [action]
+        if percepts['deck-sensor'].cards_remaining() > 0:
+            return [action, 'draw-True']
+        else:
+            return [action, 'draw-False']
     else:
         return []
 
 
-def build_knowledge_base(players_actions):
+def build_knowledge_base(players_actions, current_player, player_type):
     """
     Build a knowledge base to predict whether each player is a Gold Miner or a Saboteur based on their actions.\n
     Args:
         players_actions (dict): A dictionary mapping player names to their lists of actions.
+        current_player (string): The current player.
+        player_type (string) the player type ('gold-miner' or 'saboteur')
     Returns:
         dict: A dictionary mapping player names to their predicted roles ('gold-miner' or 'saboteur').
     """
@@ -129,6 +134,8 @@ def build_knowledge_base(players_actions):
         else:
             predicted_states[player] = 'gold-miner'
 
+    predicted_states[current_player] = player_type
+
     return predicted_states
 
 
@@ -159,27 +166,35 @@ def intelligent_agent(percepts, actuators):
 
     # Extract game state information
     players_actions = percepts['players-actions-sensor']
+    deck = percepts['deck-sensor']
     game_state = {
         'game-board': percepts['game-board-sensor'],
         'player-turn': player_turn,
         'players': players,
-        'deck': percepts['deck-sensor'],
+        'deck': deck,
         'revealed': percepts['revealed-sensor'],
-        'players-actions': players_actions
+        'players-actions': players_actions,
+        'announcements': percepts['announcements-sensor']
     }
 
     # Build the knowledge base based on players' action
-    kb = build_knowledge_base(players_actions)
+    kb = build_knowledge_base(players_actions, player_turn, player['player-type'])
     print(f"{player_turn} KB: {kb}")
 
     # Choose actions based on the player's type (saboteur or gold miner)
     if player['player-type'] == 'saboteur':
-        action = saboteur_behaviour(game_state, kb)
+        actions = SaboteurBehaviour.behaviour(game_state, kb)
     else:
-        action = gold_miner_behaviour(game_state, kb)
+        actions = GoldMinerBehaviour.behaviour(game_state, kb)
 
     # Handle errors and ensure that an action is returned
-    if action is None or len(action) <= 0:
+    if actions is None or len(actions) <= 0:
         raise InvalidActionException(f"No action for player {player_turn}")
 
-    return action
+    # Draw a card if there are any remaining
+    if deck.cards_remaining() > 0:
+        actions.append('draw-True')
+    elif actuators['draw-card']:
+        actions.append('draw-False')
+
+    return actions

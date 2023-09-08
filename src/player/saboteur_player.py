@@ -69,6 +69,16 @@ class SaboteurPlayer(Agent):
                     for value in players_actions.values())
         )
 
+        # Players Actions Sensor
+        self.add_sensor(
+            sensor_name='announcements-sensor',
+            initial_value={},
+            validation_function=lambda announcements:
+                isinstance(announcements, dict) and
+                all(isinstance(value, list) and all(isinstance(element, tuple) for element in value)
+                    for value in announcements.values())
+        )
+
         # Player specific sensors
 
         # Player sensor
@@ -101,18 +111,18 @@ class SaboteurPlayer(Agent):
         self.add_sensor(
             sensor_name='sabotaged-sensor',
             initial_value=[],
-            validation_function=lambda sabotage:
-                isinstance(sabotage, list) and
-                all(isinstance(card, str) for card in sabotage)
+            validation_function=lambda sabotaged:
+                isinstance(sabotaged, list) and
+                all(isinstance(player, str) for player in sabotaged)
         )
 
         # Seen Sensor (from using Map card)
         self.add_sensor(
             sensor_name='seen-sensor',
             initial_value=[],
-            validation_function=lambda cards:
-                isinstance(cards, list) and
-                all(isinstance(card, tuple) for card in cards)
+            validation_function=lambda seen:
+                isinstance(seen, list) and
+                all(isinstance(item, tuple) for item in seen)
         )
 
     def add_all_actuators(self):
@@ -130,6 +140,14 @@ class SaboteurPlayer(Agent):
                 action[0] in ['mend', 'path', 'turn', 'map', 'dynamite', 'sabotage', 'pass'] and
                 (isinstance(action[1], tuple) or isinstance(action[1], str) or action[1] is None) and
                 (isinstance(action[2], str) or action[2] is None)
+        )
+
+        # Draw card (boolean)
+        self.add_actuator(
+            actuator_name='draw-card',
+            initial_value=False,
+            validation_function=lambda action:
+                action in [True, False]
         )
 
     def add_all_actions(self):
@@ -192,3 +210,10 @@ class SaboteurPlayer(Agent):
                     action_name=f'pass-{card}',
                     action_function=lambda c=card: {'play-card': ('pass', None, c)}
                 )
+
+        # Draw
+        for should_draw in [True, False]:
+            self.add_action(
+                action_name=f'draw-{should_draw}',
+                action_function=lambda b=should_draw: {'draw-card': b}
+            )

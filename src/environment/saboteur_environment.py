@@ -25,6 +25,7 @@ class SaboteurEnvironment(GameEnvironment):
         self._revealed_goal_cards = []
         self._sabotaged = []
         self._players_actions = {f'P{i}': [] for i in range(gc.NUMBER_OF_PLAYERS)}
+        self._announcements = {f'P{i}': [] for i in range(gc.NUMBER_OF_PLAYERS)}
 
     def _change_player(self):
         """
@@ -86,7 +87,8 @@ class SaboteurEnvironment(GameEnvironment):
             'players': self._players,
             'deck': self._deck,
             'revealed': self._revealed_goal_cards,
-            'players-actions': self._players_actions
+            'players-actions': self._players_actions,
+            'announcements': self._announcements
         }
 
         return game_state
@@ -181,6 +183,7 @@ class SaboteurEnvironment(GameEnvironment):
             'deck-sensor': self._deck,
             'revealed-sensor': self._revealed_goal_cards,
             'players-actions-sensor': self._players_actions,
+            'announcements-sensor': self._announcements,
             'player-sensor': player,
             'player-type-sensor': player['player-type'],
             'hand-sensor': player['hand'],
@@ -261,6 +264,7 @@ class SaboteurEnvironment(GameEnvironment):
         deck = game_state['deck']
         revealed_goal_cards = game_state['revealed']
         player_actions = game_state['players-actions']
+        announcement = game_state['announcements']
 
         # Extract player info
         player = players[player_turn]
@@ -346,7 +350,8 @@ class SaboteurEnvironment(GameEnvironment):
             'players': players,
             'deck': deck,
             'revealed': revealed_goal_cards,
-            'players-actions': player_actions
+            'players-actions': player_actions,
+            'announcements': announcement
         }
 
         return new_game_state, (card, player_turn)
@@ -362,6 +367,7 @@ class SaboteurEnvironment(GameEnvironment):
             return
 
         action, position_player, card_type = agent_actuators['play-card']
+        should_draw = agent_actuators['draw-card']
 
         position = None
         player = None
@@ -399,11 +405,20 @@ class SaboteurEnvironment(GameEnvironment):
 
         self._players_actions[player_turn].append(action_str)
 
+        # Announce from map card
+        if action == 'map':
+            if player['player-type'] == 'gold-miner':
+                new_state['announcements'][player_turn] = player['seen']
+            elif player['player-type'] == 'saboteur':
+                new_state['announcements'][player_turn].append(
+                    (random.choice(gc.GOAL_POSITIONS), random.choice([True, False])))
+
         # Remove and draw card
         if card is None:
             raise InvalidMoveException("No card found on player.")
         hand.remove(card)
-        if deck.cards_remaining() > 0:
+
+        if should_draw and deck.cards_remaining() > 0:
             hand.append(deck.draw())
 
         new_game_board = new_state['game-board']
@@ -420,6 +435,7 @@ class SaboteurEnvironment(GameEnvironment):
         self._player_turn = new_state['player-turn']
         self._players = new_state['players']
         self._deck = new_state['deck']
+        self._announcements = new_state['announcements']
 
     @staticmethod
     def turn(game_state):
