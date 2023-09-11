@@ -1,8 +1,15 @@
 # Saboteur
 
+## Author
+Krisna Gusti
+
+kgusti@myune.edu.au
+
 ## Description
 
-In "Saboteur," players will assume the roles of either dwarves or saboteurs with the common goal of reaching the hidden gold treasure by constructing a pathway. However, there's a twist – the saboteurs will secretly try to hinder the dwarves' progress, adding an element of uncertainty to the gameplay.
+In "Saboteur," players will assume the roles of either dwarves or saboteurs with the common goal of reaching the hidden 
+gold treasure by constructing a pathway. However, there's a twist – the saboteurs will secretly try to hinder the dwarves' 
+progress, adding an element of uncertainty to the gameplay.
 
 ## Requirements
 
@@ -35,3 +42,18 @@ Execute the program in Python:
 ```python
 python3 saboteur_app.py
 ```
+
+Once the program starts a PyGame window should appear and the game immediately starts. To start a new game close any
+PyGame windows and execute the program as above.
+
+### Additional Information
+
+The game is currently implemented with all AI players, with 8 players being either 2-3 saboteurs player and the 
+remaining being gold miners. Players are listed from P0 to P7.
+
+On the main PyGame window underneath the game lists the game state and information. This includes players current turn 
+or winner, gold miner players, saboteur players, last action played, sabotaged players, cards currently in each players 
+hand and the announcements made by each player (as ((coordinates), isGold)).
+
+The knowledge base appears in the terminal console which specifies how a player perceives all other players 
+(gold miner or saboteur).

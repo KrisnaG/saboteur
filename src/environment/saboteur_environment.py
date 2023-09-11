@@ -78,7 +78,7 @@ class SaboteurEnvironment(GameEnvironment):
 
     def get_game_state(self):
         """
-            Get the current environment game state.
+        Get the current environment game state.
         Returns:
             Current environment game state.
         """
@@ -239,6 +239,10 @@ class SaboteurEnvironment(GameEnvironment):
 
     @staticmethod
     def payoff(game_state, player_name):
+        """
+        Not implemented here.
+        As a gold miner and saboteur have different definition of payoff, it is defined in the program.
+        """
         pass
 
     @staticmethod

@@ -19,7 +19,7 @@ class SaboteurPlayer(Agent):
     def add_all_sensors(self):
         """
         Adds all the required sensors.
-        Sensors: Game Board, Turn, Deck, Revealed Special Cards, Players Actions, Player, Type, Hand, Sabotage, and Seen.
+        Sensors: Game Board, Turn, Deck, Revealed Goal Cards, Players Actions, Player, Type, Hand, Sabotage, and Seen.
         """
         # Game specific sensors
 
@@ -50,7 +50,7 @@ class SaboteurPlayer(Agent):
                 isinstance(deck, object)
         )
 
-        # Revealed Special Card Sensor
+        # Revealed Goal Card Sensor
         self.add_sensor(
             sensor_name='revealed-sensor',
             initial_value=[],
@@ -211,7 +211,7 @@ class SaboteurPlayer(Agent):
                     action_function=lambda c=card: {'play-card': ('pass', None, c)}
                 )
 
-        # Draw
+        # Draw card
         for should_draw in [True, False]:
             self.add_action(
                 action_name=f'draw-{should_draw}',

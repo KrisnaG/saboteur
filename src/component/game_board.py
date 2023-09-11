@@ -22,6 +22,7 @@ class GameBoard:
         goal_cards = []
         gold_idx = random.choice([0, 1, 2])
 
+        # Label goal cards
         for i in range(3):
             if gold_idx == i:
                 label = 'gold'

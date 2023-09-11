@@ -9,7 +9,7 @@ import src.constant.game_constants as gc
 class SaboteurGame:
     def __init__(self, environment):
         """
-        Initialize the SaboteurGame instance.\n
+        Initialise the SaboteurGame instance.\n
         Args:
             environment (SaboteurEnvironment): The game environment for this game instance.
         """
@@ -189,16 +189,16 @@ class SaboteurGame:
         self._reset_bg()
         self._draw_board()
         self._draw_players_cards()
-        if type(self._environment).is_terminal(self._environment.get_game_state()):
-            self._draw_game_over()
-        else:
-            player = type(self._environment).turn(self._environment.get_game_state())
-            self._draw_text(f"Player Turn: {player}", gc.FIRST_LINE, 'left')
         self._draw_saboteurs()
         self._draw_gold_miners()
         self._draw_text(f"Last action: {self._last_action}", gc.FIFTH_LINE, 'left')
         self._draw_sabotaged_players()
         self._draw_announcements()
+        if type(self._environment).is_terminal(self._environment.get_game_state()):
+            self._draw_game_over()
+        else:
+            player = type(self._environment).turn(self._environment.get_game_state())
+            self._draw_text(f"Player Turn: {player}", gc.FIRST_LINE, 'left')
 
     def main(self):
         """
