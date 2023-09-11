@@ -6,8 +6,8 @@
 from une_ai.models import GridMap
 import random
 
-import src.constant.game_constants as gc
-from src.component.card.path_card import PathCard
+import constant.game_constants as gc
+from component.card.path_card import PathCard
 
 
 class GameBoard:

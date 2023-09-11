@@ -4,11 +4,11 @@
 
 from une_ai.models import Agent, GridMap
 
-import src.constant.game_constants as gc
-from src.component.card.card import Card
-from src.component.card.path_card import PATH_CARD_TYPES
-from src.component.deck import Deck
-from src.component.game_board import GameBoard
+import constant.game_constants as gc
+from component.card.card import Card
+from component.card.path_card import PATH_CARD_TYPES
+from component.deck import Deck
+from component.game_board import GameBoard
 
 
 class SaboteurPlayer(Agent):

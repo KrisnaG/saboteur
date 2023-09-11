@@ -3,7 +3,7 @@
 """
 
 import pygame
-import src.constant.game_constants as gc
+import constant.game_constants as gc
 
 
 class SaboteurGame:

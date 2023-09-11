@@ -3,8 +3,8 @@
     Author: Krisna Gusti (kgusti@myune.edu.au)
 """
 
-from src.component.card.card import Card
-from src.exception.invalid_tunnel import InvalidTunnel
+from component.card.card import Card
+from exception.invalid_tunnel import InvalidTunnel
 
 # Type of Path cards
 PATH_CARD_TYPES = [

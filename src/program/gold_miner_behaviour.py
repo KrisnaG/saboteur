@@ -3,8 +3,8 @@ Author:
     Krisna Gusti (kgusti@myune.edu.au)
 """
 
-from src.environment.saboteur_environment import SaboteurEnvironment
-from src.program.common_behaviour import CommonBehaviour
+from environment.saboteur_environment import SaboteurEnvironment
+from program.common_behaviour import CommonBehaviour
 
 
 class GoldMinerBehaviour(CommonBehaviour):

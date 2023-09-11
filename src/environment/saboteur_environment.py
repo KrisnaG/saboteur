@@ -4,12 +4,12 @@
 
 from une_ai.models import GameEnvironment
 
-import src.constant.game_constants as gc
-from src.component.card.action_card import ActionCard
-from src.component.card.path_card import PathCard
-from src.component.game_board import GameBoard
-from src.exception.invalid_action_exception import InvalidActionException
-from src.exception.invalid_move_exception import InvalidMoveException
+import constant.game_constants as gc
+from component.card.action_card import ActionCard
+from component.card.path_card import PathCard
+from component.game_board import GameBoard
+from exception.invalid_action_exception import InvalidActionException
+from exception.invalid_move_exception import InvalidMoveException
 
 import random
 

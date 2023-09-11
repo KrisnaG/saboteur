@@ -5,8 +5,8 @@
 
 import random
 
-from src.component.card.action_card import ActionCard
-from src.component.card.path_card import PathCard
+from component.card.action_card import ActionCard
+from component.card.path_card import PathCard
 
 
 class Deck:

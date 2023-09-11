@@ -3,7 +3,7 @@
     Author: Krisna Gusti (kgusti@myune.edu.au)
 """
 
-from src.component.card.card import Card
+from component.card.card import Card
 
 
 class ActionCard(Card):

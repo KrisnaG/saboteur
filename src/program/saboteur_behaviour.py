@@ -2,9 +2,9 @@
 Author:
     Krisna Gusti (kgusti@myune.edu.au)
 """
-from src.component.game_board import GameBoard
-from src.environment.saboteur_environment import SaboteurEnvironment
-from src.program.common_behaviour import CommonBehaviour
+from component.game_board import GameBoard
+from environment.saboteur_environment import SaboteurEnvironment
+from program.common_behaviour import CommonBehaviour
 
 
 class SaboteurBehaviour(CommonBehaviour):

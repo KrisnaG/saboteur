@@ -6,8 +6,8 @@ Author:
 import math
 import random
 
-from src.component.game_board import GameBoard
-import src.constant.game_constants as gc
+from component.game_board import GameBoard
+import constant.game_constants as gc
 
 
 class CommonBehaviour:

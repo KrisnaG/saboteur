@@ -10,11 +10,11 @@ import numpy as np
 from pomegranate.distributions import Categorical
 from pomegranate.hmm import DenseHMM
 
-from src.environment.saboteur_environment import SaboteurEnvironment
-import src.constant.game_constants as gc
-from src.exception.invalid_action_exception import InvalidActionException
-from src.program.gold_miner_behaviour import GoldMinerBehaviour
-from src.program.saboteur_behaviour import SaboteurBehaviour
+from environment.saboteur_environment import SaboteurEnvironment
+import constant.game_constants as gc
+from exception.invalid_action_exception import InvalidActionException
+from program.gold_miner_behaviour import GoldMinerBehaviour
+from program.saboteur_behaviour import SaboteurBehaviour
 
 
 def random_behaviour(percepts, actuators):
