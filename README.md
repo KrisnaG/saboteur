@@ -20,7 +20,19 @@ The une_ai Python package is required for the program. The package can be found 
 pip install une_ai
 ```
 
-A Python Virtual Environments is also required to run this package. It can be created using conda:
+If you have une_ai installed already, ensure it is up to date by executing the following command:
+
+```Bash
+pip install --upgrade une_ai
+```
+
+The package pomegranate is also required for the program. Install the package with the command:
+
+```Bash
+pip install pomegranate
+```
+
+A Python Virtual Environments is required to run this package. It can be created using conda:
 
 ```Bash
 conda create -n <name>
@@ -36,6 +48,11 @@ cd src/
 Ensure a conda environment is created and activated:
 ```Bash
 conda activate <name>
+```
+
+Ensure the packages une_ai and pomegranate listed in the requirements are installed (refer to the requirements section for installation). If you are unsure what packages you have installed in pip execute the following command:
+```Bash
+pip list
 ```
 
 Execute the program in Python:
