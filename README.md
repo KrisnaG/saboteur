@@ -3,8 +3,6 @@
 ## Author
 Krisna Gusti
 
-kgusti@myune.edu.au
-
 ## Description
 
 In "Saboteur," players will assume the roles of either dwarves or saboteurs with the common goal of reaching the hidden 
